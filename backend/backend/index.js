@@ -1,50 +1,76 @@
-// backend/index.js
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const app = express();
 
-// Habilita CORS para permitir que React se conecte desde otro dominio
 app.use(cors());
-app.use(express.json()); // Para procesar datos JSON
+app.use(express.json());
 
-// Configuración de la conexión a MySQL
 const db = mysql.createConnection({
-  host: 'localhost',          // Cambia si usas un servidor diferente
-  user: 'root',               // Usuario de MySQL
-  password: '',               // Contraseña de MySQL (vacío en XAMPP por defecto)
-  database: 'inventario_pasumerce' // Nombre de tu base de datos en MySQL
+    host: 'localhost',
+    user: 'root',
+    database: 'inventario_pasumerce',
+    password: '' // Asegúrate de agregar tu contraseña si tienes una
 });
 
 db.connect((err) => {
-  if (err) {
-    console.error('Error al conectar a la base de datos:', err);
-    return;
-  }
-  console.log('Conectado a la base de datos MySQL');
-});
-
-// Ruta para manejar el login
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-
-  // Ajusta los nombres de la tabla y campos según la estructura de tu base de datos
-  const query = 'SELECT * FROM usuario WHERE username = ? AND password = ?';
-  db.query(query, [username, password], (err, results) => {
     if (err) {
-      return res.status(500).json({ error: 'Error en el servidor' });
+        console.error('Error al conectar a la base de datos:', err);
+        return;
     }
-    
-    if (results.length > 0) {
-      res.json({ success: true, message: 'Inicio de sesión exitoso' });
-    } else {
-      res.json({ success: false, message: 'Credenciales incorrectas' });
-    }
-  });
+    console.log('Conectado a la base de datos MySQL');
 });
 
-// Inicia el servidor en el puerto 5000
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+
+    const query = `
+        SELECT u.*, p.nombre, p.apellido, e.permisos, e.area
+        FROM usuario u
+        LEFT JOIN persona p ON u.idPersona = p.id
+        LEFT JOIN empleado e ON p.idEmpleado = e.id
+        WHERE u.username = ? AND u.password = ?
+    `;
+
+    db.query(query, [username, password], (err, results) => {
+        if (err) {
+            console.error('Error en la consulta:', err);
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Error en el servidor',
+                error: err.message 
+            });
+        }
+        
+        if (results.length > 0) {
+            const user = results[0];
+            res.json({ 
+                success: true, 
+                message: 'Inicio de sesión exitoso',
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    nombre: user.nombre,
+                    apellido: user.apellido,
+                    permisos: user.permisos,
+                    area: user.area
+                }
+            });
+        } else {
+            res.json({ 
+                success: false, 
+                message: 'Credenciales incorrectas' 
+            });
+        }
+    });
+});
+
+// Ruta para verificar si el servidor está funcionando
+app.get('/api/status', (req, res) => {
+    res.json({ status: 'Server is running' });
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
