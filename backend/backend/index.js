@@ -1,15 +1,30 @@
-const express = require('express');
-const mysql = require('mysql2');
-const cors = require('cors');
+import express from 'express';
+import mysql from 'mysql2';
+import cors from 'cors';
+
 const app = express();
 
-app.use(cors());
+// Configuración detallada de CORS
+const corsOptions = {
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Middleware para logging de solicitudes
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
 
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    database: 'inventario_pasumerce',
+    database: 'inventario_pasumerce(1)',
     password: '' // Asegúrate de agregar tu contraseña si tienes una
 });
 
@@ -23,6 +38,15 @@ db.connect((err) => {
 
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
+    console.log('Intento de login para usuario:', username);
+
+    // Validación básica
+    if (!username || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Usuario y contraseña son requeridos'
+        });
+    }
 
     const query = `
         SELECT u.*, p.nombre, p.apellido, e.permisos, e.area
@@ -43,10 +67,12 @@ app.post('/api/login', (req, res) => {
         }
         
         if (results.length > 0) {
+            console.log('Login exitoso para usuario:', username);
             const user = results[0];
             res.json({ 
                 success: true, 
                 message: 'Inicio de sesión exitoso',
+                redirectUrl: 'menu.html',
                 user: {
                     id: user.id,
                     username: user.username,
@@ -57,7 +83,8 @@ app.post('/api/login', (req, res) => {
                 }
             });
         } else {
-            res.json({ 
+            console.log('Credenciales incorrectas para usuario:', username);
+            res.status(401).json({ 
                 success: false, 
                 message: 'Credenciales incorrectas' 
             });
