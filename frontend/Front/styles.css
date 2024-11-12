@@ -187,6 +187,24 @@ body {
 
 /* Área de Contenido Principal */
 .content-area h1 {
-    font-size: 24px;
+    font-size: 30px;
     color: #333;
+}
+
+.small-button {
+border: 0;
+border-radius: 8px;
+color: #fff;
+display: flex;
+font-size: 15px;
+cursor: pointer;
+transition: .3s;
+}
+
+.bottom-bar a{
+background-color: #2a4a2e;
+padding: 16px 24px;
+border-radius: 6px;
+width: 120px;
+transition: .3s;
 }
