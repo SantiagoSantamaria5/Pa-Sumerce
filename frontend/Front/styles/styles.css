@@ -208,3 +208,19 @@ border-radius: 6px;
 width: 120px;
 transition: .3s;
 }
+
+h3 {
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .btn-primary {
+    background-color: #2a4a2e;
+    border-color: #2a4a2e;
+  }
+  
+  .btn-primary:hover {
+    background-color: #004494;
+    border-color: #004494;
+  }
