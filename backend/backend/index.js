@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    database: 'inventario_pasumerce',
+    database: 'inventario_pasumerce(1)',
     password: '' // Asegúrate de agregar tu contraseña si tienes una
 });
 
