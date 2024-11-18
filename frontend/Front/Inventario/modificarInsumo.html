@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Modificar Insumo</title>
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="layout-bar top-bar">
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+        </script>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="layout-container d-flex align-items-center justify-content-center">
+        <div class="layout-content d-flex">
+            <!-- Menú Lateral -->
+            <div class="sidebar-menu p-3 me-4">
+                <h2 class="menu-title text-center">MENÚ INVENTARIADO</h2>
+                <ul class="list-unstyled">
+                    <li><a href="añadirInsumo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Añadir Insumo</a></li>
+                    <li><a href="modificarInsumo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">✏</span> Modificar Insumo</a></li>
+                    <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">🗑</span> Eliminar Insumo</a></li>
+                </ul>
+            </div>
+
+            <!-- Área de Contenido Principal -->
+            <div class="content-area text-center p-4">
+                <h1>Modificar Insumo</h1>
+                <div class="container my-4">
+                    <form id="modifyInsumoForm">
+                        <div class="mb-3">
+                            <label for="insumoSelect" class="form-label"></label>
+                            <select class="form-select" id="insumoSelect" onchange="cargarInsumo()">
+                                <option value="">Seleccione un insumo</option>
+                                <!-- Opciones de insumos se llenarán aquí -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cantidad" class="form-label"></label>
+                            <input type="number" class="form-control" id="cantidad" placeholder="Cantidad" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fechaAdquisicion" class="form-label"></label>
+                            <input type="date" class="form-control" id="fechaAdquisicion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fechaVencimiento" class="form-label"></label>
+                            <input type="date" class="form-control" id="fechaVencimiento" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="valorUnitario" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="valorUnitario" placeholder="Valor unitario" required>
+                            </div>
+                        </div>
+                        <button type="submit" class=" btn btn-primary w-100">Guardar Cambios</button>
+                        <button type="button" class="btn btn-secondary w-100 mt-2" onclick="cancelarProceso()">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const insumos = [
+            { nombre: "Insumo 1", cantidad: 10, fechaAdquisicion: "2023-01-01", fechaVencimiento: "2024-01-01", valorUnitario: 100 },
+            { nombre: "Insumo 2", cantidad: 5, fechaAdquisicion: "2023-02-01", fechaVencimiento: "2024-02-01", valorUnitario: 200 }
+        ];
+
+        function cargarInsumos() {
+            const select = document.getElementById('insumoSelect');
+            insumos.forEach((insumo, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = insumo.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        function cargarInsumo() {
+            const select = document.getElementById('insumoSelect');
+            const insumoIndex = select.value;
+            if (insumoIndex) {
+                const insumo = insumos[insumoIndex];
+                document.getElementById('nombre').value = insumo.nombre;
+                document.getElementById('cantidad').value = insumo.cantidad;
+                document.getElementById('fechaAdquisicion').value = insumo.fechaAdquisicion;
+                document.getElementById('fechaVencimiento').value = insumo.fechaVencimiento;
+                document.getElementById('valorUnitario').value = insumo.valorUnitario;
+            } else {
+                document.getElementById('modifyInsumoForm').reset();
+            }
+        }
+
+        function cancelarProceso() {
+            document.getElementById('modifyInsumoForm').reset();
+            alert("El proceso ha sido cancelado.");
+        }
+
+        window.onload = cargarInsumos;
+    </script>
+
+     <div class="layout-bar bottom-bar">
+        <ul class="exit-button">
+            <div class="mb-4 text-start">
+                <a href="../Inventario/menuInventario.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+            </div>
+        </ul>
+    </div>
+</body>
+</html>
