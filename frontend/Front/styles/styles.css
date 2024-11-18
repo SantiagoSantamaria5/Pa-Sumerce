@@ -62,20 +62,20 @@ label {
 
 input:focus,
 input:valid {
-    border-bottom: 2px solid #764ba2;
+    border-bottom: 2px solid #eb955c;
 }
 
 input:focus ~ label,
 input:valid ~ label {
     top: -20px;
     font-size: 12px;
-    color: #764ba2;
+    color: #eb955c;
 }
 
 button {
     width: 100%;
     padding: 12px;
-    background: #764ba2;
+    background: #eb955c;
     color: white;
     border: none;
     border-radius: 5px;
@@ -85,7 +85,7 @@ button {
 }
 
 button:hover {
-    background: #667eea;
+    background: #35d24a;
 }
 
 .message {
@@ -132,11 +132,32 @@ body {
 
 /* Barra superior e inferior con altura máxima dinámica */
 .layout-bar {
-    max-height: 200px; /* Altura máxima permitida */
+    max-height: 80px;
     background-color: #FEA04D;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
-
+.time-display {
+    font-size: 20px;
+    font-weight: bold;
+    color: #355e3b;
+}
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.time-text {
+    font-family: 'Poppins', sans-serif; 
+    font-size: 24px; 
+    font-weight: 600; 
+    color: #355e3b; 
+    text-transform: capitalize; 
+}
 /* Contenedor principal que ocupa el espacio restante */
 .layout-container {
     flex: 1;
@@ -156,7 +177,7 @@ body {
 
 /* Estilos del Menú Lateral */
 .sidebar-menu {
-    width: 250px;
+    width: 350px;
     background-color: #FEA04D;
     border-radius: 10px;
 }
@@ -201,12 +222,26 @@ cursor: pointer;
 transition: .3s;
 }
 
-.bottom-bar a{
-background-color: #2a4a2e;
-padding: 16px 24px;
-border-radius: 6px;
-width: 120px;
-transition: .3s;
+.bottom-bar a {
+    background-color: #2a4a2e; /* Color de fondo */
+    color: #ffffff; /* Color del texto */
+    padding: 9px 31px; /* Espaciado interno */
+    border-radius: 6px; /* Bordes redondeados */
+    width: 150px; /* Ancho fijo */
+    text-align: center; /* Centrar el texto */
+    text-decoration: none; /* Quitar subrayado */
+    display: inline-block; /* Hacer que el enlace se comporte como un bloque en línea */
+    transition: background-color 0.3s, transform 0.3s; /* Transiciones para el color de fondo y transformación */
+    cursor: pointer; /* Cambia el cursor al pasar el ratón */
+}
+
+.bottom-bar a:hover {
+    background-color: #3b6b4a; /* Color de fondo al pasar el ratón */
+    transform: translateY(20px); /* Efecto de elevación al pasar el ratón */
+}
+
+.bottom-bar a:active {
+    transform: translateY(0); /* Restablecer la elevación al hacer clic */
 }
 
 h3 {
@@ -223,4 +258,8 @@ h3 {
   .btn-primary:hover {
     background-color: #004494;
     border-color: #004494;
+  }
+
+  .btn-secondary{
+    transform: translateY(15px);
   }

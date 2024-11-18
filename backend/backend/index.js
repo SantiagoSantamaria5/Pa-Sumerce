@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    database: 'inventario_pasumerce(1)',
+    database: 'inventario_pasumerce',
     password: '' // Asegúrate de agregar tu contraseña si tienes una
 });
 
@@ -36,6 +36,55 @@ db.connect((err) => {
     console.log('Conectado a la base de datos MySQL');
 });
 
+// Ruta para agregar un proveedor
+app.post('/api/proveedores/agregar', (req, res) => {
+    const { nombre, apellido, empresa, numero, horarios } = req.body;
+
+    const query = `
+        INSERT INTO proveedores (nombre, apellido, empresa, numero, horarios ) 
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
+    db.query(query, [nombre, apellido, empresa, numero , horarios ], (error, results) => {
+        if (error) {
+            return res.status(500).json({ message: 'Error al agregar el proveedor', error });
+        }
+        res.status(201).json({ message: 'Proveedor agregado exitosamente', id: results.insertId });
+    });
+});
+
+app.get('/api/proveedores', (req, res) => {
+    const query = 'SELECT * FROM proveedores'; // Cambia esto según tu tabla
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error en la consulta:', err);
+            return res.status(500).json({ success: false, message: 'Error en el servidor' });
+        }
+        res.json(results);
+    });
+});
+
+app.post('/api/proveedores/actualizar', (req, res) => {
+    const { id, nombre, apellido, empresa, numero, horarios  } = req.body;
+
+    const query = `
+        UPDATE proveedores SET 
+        nombre = ?, 
+        apellido = ?, 
+        empresa = ?, 
+        numero = ?, 
+        horarios = ?, 
+        WHERE id = ?
+    `;
+    db.query(query, [nombre, apellido, empresa, numero, horarios, id], (err, results) => {
+        if (err) {
+            console.error('Error en la consulta:', err);
+            return res.status(500).json({ success: false, message: 'Error en el servidor' });
+        }
+        res.json({ success: true, message: 'Proveedor actualizado con éxito' });
+    });
+});
+    
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     console.log('Intento de login para usuario:', username);

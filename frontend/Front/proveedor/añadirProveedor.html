@@ -9,7 +9,29 @@
 </head>
 <body>
     <!-- Barra superior -->
-    <div class="layout-bar top-bar"></div>
+    <div class="layout-bar top-bar">
+        <title>Hora Actual</title>
+            <div class="layout-bar">
+                <span class="time-text">Hora</span>
+                <div class="time-display" id="current-time">00:00:00</div>
+            </div>
+
+            <script>
+                function updateTime() {
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+                }
+        
+                // Actualiza la hora cada segundo
+                setInterval(updateTime, 1000);
+        
+                // Llama la función inicialmente para mostrar la hora al cargar la página
+                updateTime();
+            </script>
+    </div>
 
     <!-- Contenedor Principal -->
     <div class="layout-container d-flex align-items-center justify-content-center">
@@ -26,48 +48,43 @@
             <div class="content-area text-center p-4">
                 <h1>
                     <div class="container my-4">
-                        <form>
-                          <div class="mb-3">
+                      <form id="addProveedorForm">
+                        <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" placeholder="Nombre del proveedor">
-                          </div>
-                          <div class="mb-3">
+                            <input type="text" class="form-control" id="nombre" placeholder="Nombre del proveedor" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="apellido" class="form-label">Apellido</label>
-                            <input type="text" class="form-control" id="apellido" placeholder="Apellido del proveedor">
-                          </div>
-                          <div class="mb-3">
+                            <input type="text" class="form-control" id="apellido" placeholder="Apellido del proveedor" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="empresa" class="form-label">Empresa</label>
-                            <input type="text" class="form-control" id="empresa" placeholder="Nombre de la empresa">
-                          </div>
-                          <div class="mb-3">
+                            <input type="text" class="form-control" id="empresa" placeholder="Nombre de la empresa" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="numero" class="form-label">Número de Contacto</label>
-                            <input type="tel" class="form-control" id="numero" placeholder="Ejemplo: +57 321 456 9873">
-                          </div>
-                          <div class="mb-3">
+                            <input type="tel" class="form-control" id="numero" placeholder="Ejemplo: +57 321 456 9873" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="horarios" class="form-label">Horario de Atención</label>
-                            <input type="text" class="form-control" id="horarios" placeholder="Ejemplo: Lunes a Viernes, 9:00 AM - 6:00 PM">
-                          </div>
-                          <div class="mb-3">
-                            <label for="fechaEntrada" class="form-label">Fecha de Entrada</label>
-                            <input type="date" class="form-control" id="fechaEntrada">
-                          </div>
-                          <button type="submit" class="btn btn-primary w-100">Guardar!</button>
-                        </form>
+                            <input type="text" class="form-control" id="horarios" placeholder="Ejemplo: Lunes a Viernes" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Guardar!</button>
+                    </form>
                       </div>
                 </h1>
             </div>
         </div>
     </div>
 
-    <!-- Barra inferior -->
-    <div class="layout-bar bottom-bar">
-        <ul class="exit-button">
-            <li>
-                <a href="menu_proveerdor.html" class="small-button "><span class="icon me-2">❌</span> Atras </a>
-            </li>
-        </ul>
-    </div>
     
+
+    <!-- Barra inferior (opcional) -->
+    <div class="layout-bar bottom-bar">
+      <div class="mb-4 text-start">
+        <a href="menu_proveerdor.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+    </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

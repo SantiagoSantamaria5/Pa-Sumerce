@@ -9,7 +9,28 @@
 </head>
 <body>
     <!-- Barra superior -->
-    <div class="layout-bar top-bar"></div>
+    <div class="layout-bar top-bar"><title>Hora Actual</title>
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+    
+            // Actualiza la hora cada segundo
+            setInterval(updateTime, 1000);
+    
+            // Llama la función inicialmente para mostrar la hora al cargar la página
+            updateTime();
+        </script>
+    </div>
 
     <!-- Contenedor Principal -->
     <div class="layout-container d-flex align-items-center justify-content-center">
@@ -19,7 +40,7 @@
                 <h2 class="menu-title text-center">MENÚ PRINCIPAL</h2>
                 <ul class="list-unstyled">
                     <li><a href="proveedor/menu_proveerdor.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📦</span> Proveedor</a></li>
-                    <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📋</span> Inventario</a></li>
+                    <li><a href="Inventario/menuInventario.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📋</span> Inventario</a></li>
                     <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">👨‍🍳</span> Producción</a></li>
                     <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">💵</span> Venta</a></li>
                     <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📊</span> Informes</a></li>
@@ -29,7 +50,8 @@
             
             <!-- Área de Contenido Principal -->
             <div class="content-area text-center p-4">
-                <h1>¡Bienvenido al Gestor de Inventario para Panadería y Pastelería Pa' Sumerce!</h1>
+                <h1>¡Bienvenido al Gestor de Inventario para </h1>
+                <h2> Panadería y Pastelería Pa' Sumerce!</h2>
             </div>
         </div>
     </div>

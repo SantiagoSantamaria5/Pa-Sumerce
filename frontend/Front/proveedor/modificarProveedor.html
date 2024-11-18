@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Modificar Proveedor</title>
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="layout-bar top-bar"><title>Hora Actual</title>
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+    
+            // Actualiza la hora cada segundo
+            setInterval(updateTime, 1000);
+    
+            // Llama la función inicialmente para mostrar la hora al cargar la página
+            updateTime();
+        </script>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="layout-container d-flex align-items-center justify-content-center">
+        <div class="layout-content d-flex">
+            <!-- Menú Lateral -->
+            <div class="sidebar-menu p-3 me-4">
+                <h2 class="menu-title text-center">MENÚ PRINCIPAL</h2>
+                <ul class="list-unstyled">
+                    <li><a href="añadirProveedor.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Añadir proveedor</a></li>
+                    <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">✏</span> Modificar proveedor</a></li>
+                </ul>
+            </div>
+            
+            <!-- Área de Contenido Principal -->
+            <div class="content-area text-center p-4">
+                <h1>Modificar Proveedor</h1>
+                
+                <!-- Tabla de Proveedores Registrados -->
+                <div class="container my-4">
+                    <h2>Proveedores Registrados</h2>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Empresa</th>
+                                <th>Número de Contacto</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proveedoresTableBody">
+                            <!-- Aquí se llenarán los datos de los proveedores -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Formulario de Modificación -->
+                <div class="container my-4">
+                    <form id="modificarProveedorForm">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" placeholder="Nombre del proveedor" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="apellido" placeholder="Apellido del proveedor" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="empresa" class="form-label">Empresa</label>
+                            <input type="text" class="form-control" id="empresa" placeholder="Nombre de la empresa" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numero" class="form-label">Número de Contacto</label>
+                            <input type="tel" class="form-control" id="numero" placeholder="Ejemplo: +57 321 456 9873" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="horarios" class="form-label">Horario de Atención</label>
+                            <input type="text" class="form-control" id="horarios" placeholder="Ejemplo: Lunes a Viernes" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Actualizar Proveedor</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra inferior (opcional) -->
+    <div class="layout-bar bottom-bar">
+        <div class="mb-4 text-start">
+            <a href="menu_proveerdor.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás </a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simulación de datos de proveedores
+        const proveedores = [
+            { nombre: 'Juan', apellido: 'Pérez', empresa: 'Empresa A', numero: '+57 321 456 9873' },
+            { nombre: 'María', apellido: 'Gómez', empresa: 'Empresa B', numero: '+57 321 654 3210' },
+            { nombre: 'Carlos', apellido: 'López', empresa: 'Empresa C', numero: '+57 321 789 0123' }
+        ];
+
+        // Función para cargar los proveedores en la tabla
+        function cargarProveedores() {
+            const tableBody = document.getElementById('proveedoresTableBody');
+            tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+
+            proveedores.forEach((proveedor, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${proveedor.nombre}</td>
+                    <td>${proveedor.apellido}</td>
+                    <td>${proveedor.empresa}</td>
+                    <td>${proveedor.numero}</td>
+                    <td>${proveedor.horarios}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarProveedor(${index})">Editar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Función para editar un proveedor
+        function editarProveedor(index) {
+            const proveedor = proveedores[index];
+            document.getElementById('nombre').value = proveedor.nombre;
+            document.getElementById('apellido').value = proveedor.apellido;
+            document.getElementById('empresa').value = proveedor.empresa;
+            document.getElementById('numero').value = proveedor.numero;
+            document.getElementById('horarios').value = proveedor.horarios;
+            // Aquí puedes agregar más lógica si es necesario
+        }
+
+        // Cargar los proveedores al cargar la página
+        window.onload = cargarProveedores;
+
+        document.getElementById('modificarProveedorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Recoger los datos del formulario
+            const nombre = document.getElementById('nombre').value;
+            const apellido = document.getElementById('apellido').value;
+            const empresa = document.getElementById('empresa').value;
+            const numero = document.getElementById('numero').value;
+            const horarios = document.getElementById('horarios').value;
+
+            // Aquí puedes realizar la llamada a tu API para actualizar el proveedor
+            try {
+                // Simulación de actualización
+                alert('Proveedor actualizado con éxito');
+                // Actualizar la tabla después de la modificación
+                cargarProveedores();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocurrió un error al intentar actualizar el proveedor');
+            }
+        });
+    </script>
+</body>
+</html>
