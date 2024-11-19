@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Cálculo de Ventas</title>
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="layout-bar top-bar">
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+        </script>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="layout-container d-flex align-items-center justify-content-center">
+        <div class="layout-content d-flex">
+            <div class="content-area text-center p-4">
+                <h1>Cálculo de Ventas</h1>
+                <div class="container my-4">
+                    <table class="table table-striped" id="panesTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Pan</th>
+                                <th>Ingredientes</th>
+                                <th>Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="panesTableBody">
+                            <!-- Aquí se llenarán los datos de los panes -->
+                        </tbody>
+                    </table>
+                    <h3 id="totalValue">Valor Total: $0</h3>
+                    <button class="btn btn-primary" id="generatePDF">Generar PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra inferior -->
+    <div class="layout-bar bottom-bar">
+        <div class="mb-4 text-start">
+            <a href="../venta/menuVenta.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Simulación de datos de panes
+        const panes = [
+            { nombre: 'Pan de Ajo', ingredientes: 'Harina, Ajo, Agua', precio: 100 },
+            { nombre: 'Pan de Chocolate', ingredientes: 'Harina, Chocolate, Azúcar', precio: 120 },
+            // Agrega más panes según sea necesario
+        ];
+
+        function cargarPanes() {
+            const tableBody = document.getElementById('panesTableBody');
+            tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+            let total = 0;
+
+            panes.forEach(pan => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pan.nombre}</td>
+                    <td>${pan.ingredientes}</td>
+                    <td>$${pan.precio}</td>
+                `;
+                tableBody.appendChild(row);
+                total += pan.precio; // Sumar el precio para el total
+            });
+
+            document.getElementById('totalValue').textContent = `Valor Total: $${total}`;
+        }
+
+        document.getElementById('generatePDF').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text('Cálculo de Ventas', 20, 10);
+            let y = 20;
+
+            panes.forEach(pan => {
+                doc.text(`Nombre: ${pan.nombre}, Ingredientes: ${pan.ingredientes}, Precio: $${pan.precio}`, 20, y);
+                y += 10;
+            });
+
+            doc.text(`Valor Total: $${document.getElementById('totalValue').textContent.split('$')[1]}`, 20, y + 10);
+            doc.save('calculo_ Ventas.pdf');
+        });
+
+        // Cargar los panes al iniciar
+        window.onload = cargarPanes;
+    </script>
+</body>
+</html>

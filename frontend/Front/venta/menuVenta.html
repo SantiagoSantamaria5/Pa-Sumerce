@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Produccion</title>  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <body>
+        <!-- Barra superior -->
+        <div class="layout-bar top-bar">
+            <div class="layout-bar">
+                <span class="time-text">Hora</span>
+                <div class="time-display" id="current-time">00:00:00</div>
+            </div>
+
+            <script>
+                function updateTime() {
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+                }
+        
+                // Actualiza la hora cada segundo
+                setInterval(updateTime, 1000);
+        
+                // Llama la función inicialmente para mostrar la hora al cargar la página
+                updateTime();
+            </script>
+        </div>
+    
+        <!-- Contenedor Principal -->
+        <div class="layout-container d-flex align-items-center justify-content-center">
+            <div class="layout-content d-flex">
+                <!-- Menú Lateral -->
+                <div class="sidebar-menu p-3 me-4">
+                    <h2 class="menu-title text-center">MENÚ VENTA</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="calculoVentas.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">✏</span> Registro nuevo</a></li></ul>
+                </div>
+                
+                <!-- Área de Contenido Principal -->
+                <div class="content-area text-center p-4">
+                    <h1>¿Que deseas hacer hoy en el apartado de seguimiento ventas?</h1>
+                </div>
+            </div>
+        </div>
+
+    
+        <!-- Barra inferior -->
+        <div class="layout-bar bottom-bar">
+            <ul class="exit-button">
+                <div class="mb-4 text-start">
+                    <a href="../menu.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+                </div>
+            </ul>
+        </div>
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    </body>
+</body>
+</html>
