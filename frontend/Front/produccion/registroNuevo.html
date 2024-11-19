@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles/styles.css">
-    <title>Añadir nuevo registro</title>
+    <title>Registro Nuevo</title>
 </head>
 <body>
     <!-- Barra superior -->
@@ -26,8 +26,6 @@
 
             // Actualiza la hora cada segundo
             setInterval(updateTime, 1000);
-
-            // Llama la función inicialmente para mostrar la hora al cargar la página
             updateTime();
         </script>
     </div>
@@ -39,34 +37,24 @@
             <div class="sidebar-menu p-3 me-4">
                 <h2 class="menu-title text-center">MENÚ DE PANADERÍA</h2>
                 <ul class="list-unstyled">
-                    <li><a href="registroNuevo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Registro nuevo</a></li>
-                    <li><a href="registroDiario.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">🌤</span> Registro diario</a></li>
-                    <li><a href="registroMensual.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📆</span> Registro mensual </a></li>
-                    <li><a href="registroAnual.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📊</span> Registro anual</a></li>
+                    <li><a href="añadirPanes.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Añadir Pan</a></li>
+                    <li><a href="registroNuevo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">📋</span> Registro Nuevo</a></li>
                 </ul>
             </div>
             
             <!-- Área de Contenido Principal -->
             <div class="content-area text-center p-4">
-                <h1>Añadir Pan</h1>
+                <h1>Registro Nuevo</h1>
                 <div class="container my-4">
-                    <form id="addPanForm">
+                    <form id="registroNuevoForm">
                         <div class="mb-3">
-                            <label for="nombrePan" class="form-label"></label>
-                            <input type="text" class="form-control" id="nombrePan" placeholder="Nombre del pan" required>
+                            <label for="panSelect" class="form-label">Seleccione un Pan</label>
+                            <select class="form-select" id="panSelect" required>
+                                <option value="">Seleccione un pan</option>
+                                <!-- Opciones de panes se llenarán aquí -->
+                            </select>
                         </div>
-                        <div id="ingredientesContainer" class="mb-3">
-                            <label class="form-label"></label>
-                            <div class="d-flex align-items-center" id="ingredientInputs">
-                                <input type="text" class="form-control me-2" placeholder="Ingrediente" required>
-                                <input type="number" class="form-control me-2" placeholder="Gramos" required>
-                                <button type="button" class="btn btn-danger btn-sm removeIngredientBtn" style="display: none;">❌</button>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-column align-items-center">
-                            <button type="button" class="btn btn-secondary mb-2" id="addIngredientBtn">Añadir Ingrediente</button>
-                            <button type="submit" class="btn btn-primary">Guardar</button>
-                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
                     </form>
                 </div>
             </div>
@@ -80,82 +68,20 @@
         </div>
     </div>
 
+    <script src="../main.js"></script>
     <script>
-        document.getElementById('addPanForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const nombrePan = document.getElementById('nombrePan').value;
-            const ingredientes = [];
-            const ingredientInputs = document.querySelectorAll('#ingredientInputs input[type="text"], #ingredientInputs input[type="number"]');
-
-            for (let i = 0; i < ingredientInputs.length; i += 2) {
-                const ingrediente = ingredientInputs[i].value;
-                const gramos = ingredientInputs[i + 1].value;
-                if (ingrediente && gramos) {
-                    ingredientes.push({ ingrediente, gramos });
-                }
+        window.onload = function() {
+            // Cargar los panes al cargar la página
+            cargarPanes();
+    
+            // Mostrar el precio si existe
+            const precio = localStorage.getItem('precioPan');
+            if (precio) {
+                const precioElement = document.createElement('p');
+                precioElement.textContent = `Precio del pan: $${precio}`;
+                document.body.appendChild(precioElement); // O donde desees mostrarlo
             }
-
-            try {
-                const response = await fetch('http://localhost:5000/api/pan/agregar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ nombre: nombrePan, ingredientes: ingredientes })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al guardar el pan');
-                }
-
-                const result = await response.json();
-                alert('Pan agregado exitosamente: ' + result.nombre);
-                document.getElementById('addPanForm').reset();
-                document.getElementById('ingredientesContainer').innerHTML = `
-                    <label class="form-label">Ingredientes (gramos)</label>
-                    <div class="d-flex align-items-center" id="ingredientInputs">
-                        <input type="text" class="form-control me-2" placeholder="Ingrediente" required>
-                        <input type="number" class="form-control me-2" placeholder="Gramos" required>
-                        <button type="button" class="btn btn-danger btn-sm removeIngredientBtn" style="display: none;">❌</button>
-                    </div>
-                `;
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        });
-
-        document.getElementById('addIngredientBtn').addEventListener('click', () => {
-            const newIngredientInput = document.createElement('input');
-            newIngredientInput.type = 'text';
-            newIngredientInput.className = 'form-control me-2';
-            newIngredientInput.placeholder = 'Ingrediente';
-            newIngredientInput.required = true;
-
-            const newGramsInput = document.createElement('input');
-            newGramsInput.type = 'number';
-            newGramsInput.className = 'form-control me-2';
-            newGramsInput.placeholder = 'Gramos';
-            newGramsInput.required = true;
-
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn-danger btn-sm removeIngredientBtn';
-            removeBtn.textContent = '❌';
-            removeBtn.style.backgroundColor = 'yourColor'; // Cambia 'yourColor' por el color que desees
-
-            const ingredientContainer = document.createElement('div');
-            ingredientContainer.className = 'd-flex align-items-center my-2';
-            ingredientContainer.appendChild(newIngredientInput);
-            ingredientContainer.appendChild(newGramsInput);
-            ingredientContainer.appendChild(removeBtn);
-
-            document.getElementById('ingredientesContainer').appendChild(ingredientContainer);
-
-            removeBtn.addEventListener('click', () => {
-                ingredientContainer.remove();
-            });
-        });
+        };
     </script>
 </body>
 </html>
