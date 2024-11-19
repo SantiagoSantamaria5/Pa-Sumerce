@@ -85,7 +85,7 @@ router.put('/actualizar/:id', (req, res) => {
 
 
 // Endpoint para eliminar un insumo
-app.delete('/inventario/eliminar/:id', async (req, res) => {
+router.put('/inventario/eliminar/:id', async (req, res) => {
     const insumoId = req.params.id;
 
     try {
