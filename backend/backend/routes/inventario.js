@@ -83,21 +83,24 @@ router.put('/actualizar/:id', (req, res) => {
     });
 });
 
-// Eliminar un insumo
-router.delete('/eliminar/:id', (req, res) => {
-    const { id } = req.params;
 
-    const query = 'DELETE FROM inventario WHERE Id = ?';
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error al eliminar el insumo:', err);
-            return res.status(500).json({ message: 'Error al eliminar el insumo.' });
+// Endpoint para eliminar un insumo
+app.delete('/inventario/eliminar/:id', async (req, res) => {
+    const insumoId = req.params.id;
+
+    try {
+        // Eliminar el insumo de la base de datos
+        const result = await eliminarInsumoDeBaseDeDatos(insumoId);
+
+        if (result) {
+            res.json({ success: true, message: 'Insumo eliminado' });
+        } else {
+            res.status(404).json({ success: false, message: 'No se encontró el insumo' });
         }
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ message: 'Insumo no encontrado.' });
-        }
-        res.json({ message: 'Insumo eliminado exitosamente.' });
-    });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al eliminar el insumo' });
+    }
 });
+
 
 export default router;

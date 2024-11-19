@@ -36,7 +36,7 @@
                 <ul class="list-unstyled">
                     <li><a href="añadirInsumo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Añadir Insumo</a></li>
                     <li><a href="modificarInsumo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">✏</span> Modificar Insumo</a></li>
-                    <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">🗑</span> Eliminar Insumo</a></li>
+                    <li><a href="eliminarInsumo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">🗑</span> Eliminar Insumo</a></li>
                 </ul>
             </div>
 
@@ -49,12 +49,15 @@
                             <label for="insumoSelect" class="form-label"></label>
                             <select class="form-select" id="insumoSelect" onchange="cargarInsumo()">
                                 <option value="">Seleccione un insumo</option>
-                                <!-- Opciones de insumos se llenarán aquí -->
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="nombre" class="form-label"></label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="cantidad" class="form-label"></label>
-                            <input type="number" class="form-control" id="cantidad" placeholder="Cantidad" required>
+                            <input type="number" class="form-control" id="cantidad" required>
                         </div>
                         <div class="mb-3">
                             <label for="fechaAdquisicion" class="form-label"></label>
@@ -68,57 +71,19 @@
                             <label for="valorUnitario" class="form-label"></label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" id="valorUnitario" placeholder="Valor unitario" required>
+                                <input type="number" class="form-control" id="valorUnitario" required>
                             </div>
                         </div>
-                        <button type="submit" class=" btn btn-primary w-100">Guardar Cambios</button>
-                        <button type="button" class="btn btn-secondary w-100 mt-2" onclick="cancelarProceso()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const insumos = [
-            { nombre: "Insumo 1", cantidad: 10, fechaAdquisicion: "2023-01-01", fechaVencimiento: "2024-01-01", valorUnitario: 100 },
-            { nombre: "Insumo 2", cantidad: 5, fechaAdquisicion: "2023-02-01", fechaVencimiento: "2024-02-01", valorUnitario: 200 }
-        ];
+    <script src="../main.js"></script>
 
-        function cargarInsumos() {
-            const select = document.getElementById('insumoSelect');
-            insumos.forEach((insumo, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = insumo.nombre;
-                select.appendChild(option);
-            });
-        }
-
-        function cargarInsumo() {
-            const select = document.getElementById('insumoSelect');
-            const insumoIndex = select.value;
-            if (insumoIndex) {
-                const insumo = insumos[insumoIndex];
-                document.getElementById('nombre').value = insumo.nombre;
-                document.getElementById('cantidad').value = insumo.cantidad;
-                document.getElementById('fechaAdquisicion').value = insumo.fechaAdquisicion;
-                document.getElementById('fechaVencimiento').value = insumo.fechaVencimiento;
-                document.getElementById('valorUnitario').value = insumo.valorUnitario;
-            } else {
-                document.getElementById('modifyInsumoForm').reset();
-            }
-        }
-
-        function cancelarProceso() {
-            document.getElementById('modifyInsumoForm').reset();
-            alert("El proceso ha sido cancelado.");
-        }
-
-        window.onload = cargarInsumos;
-    </script>
-
-     <div class="layout-bar bottom-bar">
+    <div class="layout-bar bottom-bar">
         <ul class="exit-button">
             <div class="mb-4 text-start">
                 <a href="../Inventario/menuInventario.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>

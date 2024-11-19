@@ -50,7 +50,7 @@
                 <div class="container my-4">
                     <form id="deleteInsumoForm">
                         <div class="mb-3">
-                            <label for="insumoSelect" class="form-label"></label>
+                            <label for="insumoSelect" class="form-label">Seleccione un Insumo</label>
                             <select class="form-select" id="insumoSelect" required>
                                 <option value="">Seleccione un insumo</option>
                                 <!-- Opciones de insumos se llenarán aquí -->
@@ -70,45 +70,6 @@
         </div>
     </div>
 
-    <script>
-        const insumos = [
-            { id: 1, nombre: "Insumo 1" },
-            { id: 2, nombre: "Insumo 2" },
-            { id: 3, nombre: "Insumo 3" }
-        ];
-
-        function cargarInsumos() {
-            const select = document.getElementById('insumoSelect');
-            insumos.forEach(insumo => {
-                const option = document.createElement('option');
-                option.value = insumo.id;
-                option.textContent = insumo.nombre;
-                select.appendChild(option);
-            });
-        }
-
-        function eliminarInsumo() {
-            const select = document.getElementById('insumoSelect');
-            const insumoId = select.value;
-            if (insumoId) {
-                const insumoNombre = insumos.find(insumo => insumo.id == insumoId).nombre;
-                const confirmacion = confirm(`¿Está seguro de que desea eliminar el insumo: ${insumoNombre}?`);
-                if (confirmacion) {
-                    // Lógica para eliminar el insumo
-                    const index = insumos.findIndex(insumo => insumo.id == insumoId);
-                    if (index > -1) {
-                        insumos.splice(index, 1);
-                        alert(`Insumo ${insumoNombre} eliminado con éxito.`);
-                        select.remove(select.selectedIndex);
-                    }
-                }
-            } else {
-                alert("Por favor, seleccione un insumo para eliminar.");
-            }
-        }
-
-        // Cargar insumos al iniciar la página
-        window.onload = cargarInsumos;
-    </script>
+    <script src="../main.js"></script>
 </body>
 </html>

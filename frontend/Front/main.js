@@ -26,12 +26,11 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
     }
 
     try {
-        console.log('Sending request to:', `${API_BASE_URL}${endpoint}`, options);
+        console.log('Enviando solicitud a:', `${API_BASE_URL}${endpoint}`, options);
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         
-        // Log de la respuesta para debugging
-        console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
+        // Verificar el estado de la respuesta
+        console.log('Estado de la respuesta:', response.status);
 
         // Intentar obtener el cuerpo de la respuesta
         let data;
@@ -42,23 +41,25 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
             data = await response.text();
         }
 
+        // Si la respuesta no es exitosa, lanzamos un error con los datos recibidos
         if (!response.ok) {
+            console.error('Error de red:', data);
             throw new NetworkError(
                 typeof data === 'object' ? data.message : data,
                 response.status
             );
         }
 
+        console.log('Datos de la respuesta:', data);  // Mostrar los datos para ver qué devuelve el servidor
         return data;
     } catch (error) {
-        console.error('Error completo:', error);
+        console.error('Error de red:', error);
         if (error instanceof NetworkError) {
             throw error;
         }
         throw new NetworkError('Error de conexión con el servidor', 500);
     }
 }
-
 // Manejador del formulario de login
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -127,8 +128,132 @@ document.getElementById('addInsumoForm')?.addEventListener('submit', async (e) =
         alert(`Error: ${error.message}`);
     }
 });
+async function cargarInsumos() {
+    try {
+        // Solicitar los insumos al servidor
+        insumos = await sendRequest('/inventario', 'GET'); // Asigna el valor a la variable global insumos
+        
+        // Obtener el select donde se cargarán los insumos
+        const insumoSelect = document.getElementById('insumoSelect');
+        insumoSelect.innerHTML = '<option value="">Seleccione un insumo</option>'; // Limpiar el select antes de llenarlo
+
+        // Renderizar cada insumo como opción en el select
+        insumos.forEach(insumo => {
+            const option = document.createElement('option');
+            option.value = insumo.Id; // Usamos el Id del insumo
+            option.textContent = `${insumo.nombre}`; // Muestra el nombre y la cantidad
+            insumoSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error al cargar los insumos:', error);
+        alert('Hubo un problema al cargar los insumos.');
+    }
+}
 
 
+// Cargar los detalles del insumo seleccionado
+// Cargar los datos del insumo seleccionado
+function cargarInsumo() {
+    const insumoId = document.getElementById('insumoSelect').value;
+
+    // Asegúrate de que se haya seleccionado un insumo
+    if (insumoId === "") {
+        return; // No hacer nada si no se ha seleccionado un insumo
+    }
+
+    // Buscar el insumo seleccionado en los datos cargados
+    const insumoSeleccionado = insumos.find(insumo => insumo.Id == insumoId);
+
+    if (insumoSeleccionado) {
+        // Rellenar los campos del formulario con los datos del insumo
+        document.getElementById('nombre').value = insumoSeleccionado.nombre;
+        document.getElementById('cantidad').value = insumoSeleccionado.cantidad;
+        document.getElementById('fechaAdquisicion').value = insumoSeleccionado.fechaAdquisicion;
+        document.getElementById('fechaVencimiento').value = insumoSeleccionado.fechaVencimiento;
+        document.getElementById('valorUnitario').value = insumoSeleccionado.valorUnitario;
+    }
+}
+
+
+// Función para actualizar un insumo
+async function actualizarInsumo(event) {
+    event.preventDefault();
+
+    const insumoId = document.getElementById('insumoSelect').value;
+    const nombre = document.getElementById('nombre').value;
+    const cantidad = document.getElementById('cantidad').value;
+    const fechaAdquisicion = document.getElementById('fechaAdquisicion').value;
+    const fechaVencimiento = document.getElementById('fechaVencimiento').value;
+    const valorUnitario = document.getElementById('valorUnitario').value;
+
+    if (!insumoId || !cantidad || !fechaAdquisicion || !fechaVencimiento || !valorUnitario) {
+        alert('Por favor, complete todos los campos.');
+        return;
+    }
+
+    const updatedInsumo = {
+        nombre: nombre,
+        cantidad: cantidad,
+        fechaAdquisicion: fechaAdquisicion,
+        fechaVencimiento: fechaVencimiento,
+        valorUnitario: valorUnitario
+    };
+
+    try {
+        // Actualizar el insumo usando sendRequest con método PUT
+        const response = await sendRequest(`/inventario/actualizar/${insumoId}`, 'PUT', updatedInsumo);
+
+        console.log('Response from server:', response);  // Ver la respuesta completa para debugging
+
+        if (response.success) {
+            alert('Insumo actualizado correctamente.');
+        } else {
+            alert(`Error al actualizar el insumo: ${response.message || 'Desconocido'}`);
+        }
+    } catch (error) {
+        console.error('Error al actualizar el insumo:', error);
+        alert(`Hubo un problema al actualizar el insumo: ${error.message}`);
+    }
+}
+
+
+async function eliminarInsumo() {
+    const insumoId = document.getElementById('insumoSelect').value;
+
+    // Validar que se haya seleccionado un insumo
+    if (!insumoId) {
+        alert('Por favor, seleccione un insumo para eliminar.');
+        return;
+    }
+
+    if (confirm('¿Está seguro de que desea eliminar este insumo?')) {
+        try {
+            const response = await sendRequest(`/inventario/eliminar/${insumoId}`, 'DELETE');
+            
+            console.log('Respuesta del servidor después de eliminar el insumo:', response);  // Ver la respuesta completa
+
+            // Verificar si la respuesta contiene el campo 'success'
+            if (response.success) {
+                alert('Insumo eliminado correctamente.');
+                document.getElementById('insumoSelect').innerHTML = '<option value="">Seleccione un insumo</option>';
+                cargarInsumos();  // Recargar los insumos después de eliminar
+            } else {
+                // Si no tiene 'success', mostrar el mensaje recibido
+                alert('Error al eliminar el insumo. Respuesta inesperada:', response);
+            }
+        } catch (error) {
+            console.error('Error al eliminar el insumo:', error);
+            alert('Hubo un problema al eliminar el insumo.');
+        }
+    }
+}
+
+
+// Manejar el evento de envío del formulario para modificar un insumo
+document.getElementById('modifyInsumoForm')?.addEventListener('submit', actualizarInsumo);
+
+// Llamar a la función cargarInsumos al cargar la página
+window.onload = cargarInsumos;
 
 // Función de validación (agregada al inicio del archivo)
 function validateField(value, fieldName, options = {}) {
@@ -147,149 +272,5 @@ function validateField(value, fieldName, options = {}) {
         }
     }
 }
-
-// Manejador del formulario de proveedores (reemplazar el existente)
-document.getElementById('addProveedorForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const submitButton = e.target.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.textContent = 'Guardando...';
-
-    const formData = {
-        nombre: document.getElementById('nombre').value,
-        apellido: document.getElementById('apellido').value,
-        empresa: document.getElementById('empresa').value,
-        telefono: document.getElementById('numero').value,
-        horarios: document.getElementById('horarios').value
-    };
-
-    try {
-        // Validaciones
-        validateField(formData.nombre, 'Nombre');
-        validateField(formData.apellido, 'Apellido');
-        validateField(formData.empresa, 'Empresa');
-        validateField(formData.telefono, 'Teléfono', { phone: true });
-        validateField(formData.horarios, 'Horarios');
-
-        // Usar la función sendRequest en lugar de fetch directo
-        const response = await sendRequest('/proveedor/crear', 'POST', formData);
-        
-        alert(response.message || 'Proveedor guardado exitosamente');
-        document.getElementById('addProveedorForm').reset();
-    } catch (error) {
-        console.error('Error al guardar proveedor:', error);
-        alert(`Error: ${error.message}`);
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Guardar!';
-    }
-});
-
-
-// Obtener y cargar proveedores desde el backend
-// Obtener y cargar proveedores desde el backend
-async function cargarProveedores() {
-    try {
-        // Solicitar los proveedores al servidor
-        const { success, data } = await sendRequest('/proveedor/ver', 'GET'); // Llamar al endpoint usando sendRequest
-        
-        if (!success) throw new Error('No se pudieron obtener los proveedores');
-
-        const tableBody = document.getElementById('proveedoresTableBody');
-        tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
-
-        // Renderizar cada proveedor en la tabla
-        data.forEach(({ Id, nombre, apellido, empresa, telefono, horarios }) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${nombre}</td>
-                <td>${apellido}</td>
-                <td>${empresa}</td>
-                <td>${telefono}</td>
-                <td>${horarios}</td>
-                
-                <td>
-                    <button class="btn btn-warning btn-sm" 
-                        onclick="editarProveedor(${Id}, '${nombre}', '${apellido}', '${empresa}', '${telefono}', '${horarios}')">
-                        Editar
-                    </button>
-                    <button class="btn btn-danger btn-sm" 
-                        onclick="eliminarProveedor(${Id})">
-                        Eliminar
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Error al cargar proveedores:', error);
-        alert('Hubo un problema al cargar los proveedores.');
-    }
-}
-
-
-// Función para eliminar un proveedor
-async function eliminarProveedor(id) {  
-    const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este proveedor?');
-    if (confirmDelete) {
-        try {
-            // Realizar la solicitud DELETE a la API para eliminar el proveedor
-            const response = await sendRequest(`/proveedor/eliminar/${id}`, 'DELETE');
-            
-            // Verificar la respuesta usando response en lugar de success
-            if (response.success) {
-                alert('Proveedor eliminado con éxito');
-                cargarProveedores(); // Recargar la lista de proveedores después de eliminar
-            } else {
-                alert(`Error al eliminar el proveedor: ${response.message}`);
-            }
-        } catch (error) {
-            console.error('Error al eliminar proveedor:', error);
-            alert('Hubo un problema al eliminar el proveedor: ' + error.message);
-        }
-    }
-}
-
-
-// Cargar los datos de un proveedor en el formulario
-function editarProveedor(id, nombre, apellido, empresa, numero, horarios) {
-    document.getElementById('nombre').value = nombre;
-    document.getElementById('apellido').value = apellido;
-    document.getElementById('empresa').value = empresa;
-    document.getElementById('numero').value = numero;
-    document.getElementById('horarios').value = horarios;
-
-    // Guardar el ID del proveedor en un atributo del formulario
-    document.getElementById('modificarProveedorForm').dataset.proveedorId = id;
-}
-
-// Enviar los datos actualizados al servidor
-document.getElementById('modificarProveedorForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const id = e.target.dataset.proveedorId; // ID del proveedor a actualizar
-    const nombre = document.getElementById('nombre').value;
-    const apellido = document.getElementById('apellido').value;
-    const empresa = document.getElementById('empresa').value;
-    const numero = document.getElementById('numero').value;
-    const horarios = document.getElementById('horarios').value;
-
-    try {
-        // Enviar datos actualizados al servidor usando sendRequest
-        const response = await sendRequest(`/proveedor/actualizar/${id}`, 'PUT', { nombre, apellido, empresa, numero, horarios });
-
-        if (!response.success) throw new Error(response.message);
-
-        alert('Proveedor actualizado con éxito');
-        cargarProveedores(); // Recargar la tabla
-    } catch (error) {
-        console.error('Error al actualizar proveedor:', error);
-        alert('No se pudo actualizar el proveedor.');
-    }
-});
-
-// Cargar los proveedores al cargar la página
-window.onload = cargarProveedores;
 
 
