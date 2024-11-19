@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    ```html
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Informe de Proveedores</title>
+</head>
+<body>
+    <div class="layout-bar top-bar">
+        <span class="time-text">Hora</span>
+        <div class="time-display" id="current-time">00:00:00</div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+        </script>
+    </div>
+
+    <div class="layout-container d-flex align-items-center justify-content-center">
+        <div class="layout-content d-flex">
+            <div class="content-area text-center p-4">
+                <h1>Informe de Proveedores</h1>
+                <div class="container my-4">
+                    <table class="table table-striped" id="proveedoresTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Proveedor</th>
+                                <th>Contacto</th>
+                                <th>Dirección</th>
+                                <th>Teléfono</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proveedoresTableBody">
+                            <!-- Los datos se llenarán aquí -->
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary" id="generatePDF">Generar PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout-bar bottom-bar">
+        <div class="mb-4 text-start">
+            <a href="./menuInformes.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        async function cargarProveedores() {
+            const response = await fetch('http://localhost:5000/api/proveedores');
+            const proveedores = await response.json();
+            const tableBody = document.getElementById('proveedoresTableBody');
+
+            proveedores.forEach(proveedor => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${proveedor.nombre}</td>
+                    <td>${proveedor.contacto}</td>
+                    <td>${proveedor.direccion}</td>
+                    <td>${proveedor.telefono}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.getElementById('generatePDF').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text('Informe de Proveedores', 20, 10);
+            doc.autoTable({ html: '#proveedoresTable' });
+            doc.save('informe_proveedores.pdf');
+        });
+
+        window.onload = cargarProveedores;
+    </script>
+</body>
+</html>
