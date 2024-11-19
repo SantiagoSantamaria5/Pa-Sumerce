@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Registros Anuales</title>
+</head>
+<body>
+    <div class="layout-bar top-bar">
+        <span class="time-text">Hora</span>
+        <div class="time-display" id="current-time">00:00:00</div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+
+            // Actualiza la hora cada segundo
+            setInterval(updateTime, 1000);
+
+            // Llama la función inicialmente para mostrar la hora al cargar la página
+            updateTime();
+        </script>
+    </div>
+
+    <div class="layout-container d-flex align-items-center justify-content-center">
+        <div class="layout-content d-flex">
+            <div class="content-area text-center p-4">
+                <h1>Registros Anuales</h1>
+                <div class="container my-4">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Año</th>
+                                <th>Nombre del Pan</th>
+                                <th>Ingredientes</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrosAnualesTableBody">
+                            <!-- Aquí se llenarán los datos de los registros anuales -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+ <!-- Barra inferior -->
+        <div class="layout-bar bottom-bar">
+            <ul class="exit-button">
+                <div class="mb-4 text-start">
+                    <a href="../produccion/menuProduccion.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+                </div>
+            </ul>
+        </div>
+    <script>
+        // Simulación de datos de registros anuales
+        const registrosAnuales = [
+            { año: '2023', nombre: 'Pan de Ajo', ingredientes: 'Harina, Ajo, Agua' },
+            { año: '2022', nombre: 'Pan de Chocolate', ingredientes: 'Harina, Chocolate, Azúcar' }
+            // Agrega más registros según sea necesario
+        ];
+
+        function cargarRegistrosAnuales() {
+            const tableBody = document.getElementById('registrosAnualesTableBody');
+            tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+
+            registrosAnuales.forEach(registro => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${registro.año}</td>
+                    <td>${registro.nombre}</td>
+                    <td>${registro.ingredientes}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm">Ver Detalles</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.onload = cargarRegistrosAnuales;
+    </script>
+</body>
+</html>
