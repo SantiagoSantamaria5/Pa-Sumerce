@@ -20,6 +20,7 @@
     </style>
 </head>
 <body>
+    <!-- Barra superior de la hora -->
     <div class="layout-bar top-bar">
         <div class="layout-bar">
             <span class="time-text">Hora</span>
@@ -38,19 +39,23 @@
         </script>
     </div>
 
+    <!-- Contenedor principal -->
     <div class="layout-container d-flex align-items-start justify-content-center">
         <div class="layout-content d-flex">
+            <!-- Menú lateral -->
             <div class="sidebar-menu p-3 me-4">
                 <h2 class="menu-title text-center">MENÚ PRINCIPAL</h2>
                 <ul class="list-unstyled">
                     <li><a href="añadirProveedor.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Añadir proveedor</a></li>
-                    <li><a href="#" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">✏</span> Modificar proveedor</a></li>
+                    
                 </ul>
             </div>
 
+            <!-- Contenido central -->
             <div class="content-area text-center p-4">
                 <h1>Modificar Proveedor</h1>
 
+                <!-- Tabla de proveedores registrados -->
                 <div class="container my-2">
                     <h2>Proveedores Registrados</h2>
                     <table class="table table-striped">
@@ -60,16 +65,19 @@
                                 <th>Apellido</th>
                                 <th>Empresa</th>
                                 <th>Número de Contacto</th>
-                                <th>Acciones</th>
+                                <th>Horarios</th>
+                                <th>acciones</th>
                             </tr>
                         </thead>
                         <tbody id="proveedoresTableBody"></tbody>
                     </table>
                 </div>
 
+                <!-- Formulario para editar proveedor -->
                 <div class="container my-2" id="formContainer"></div>
 
                 <script>
+                    // Genera el formulario de modificación de proveedor
                     const formHTML = `
                         <form id="modificarProveedorForm">
                             ${['nombre', 'apellido', 'empresa', 'numero', 'horarios'].map(field => `
@@ -87,64 +95,14 @@
         </div>
     </div>
 
+    <!-- Barra inferior -->
     <div class="layout-bar bottom-bar">
         <div class="mb-4 text-start">
-            <a href ="menu_proveerdor.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás </a>
+            <a href="menu_proveerdor.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás </a>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const proveedores = [
-            { nombre: 'Juan', apellido: 'Pérez', empresa: 'Empresa A', numero: '+57 321 456 9873', horarios: 'Lunes a Viernes' },
-            { nombre: 'María', apellido: 'Gómez', empresa: 'Empresa B', numero: '+57 321 654 3210', horarios: 'Martes a Sábado' },
-            { nombre: 'Carlos', apellido: 'López', empresa: 'Empresa C', numero: '+57 321 789 0123', horarios: 'Lunes a Viernes' }
-        ];
-
-        function cargarProveedores() {
-            const tableBody = document.getElementById('proveedoresTableBody');
-            tableBody.innerHTML = '';
-
-            proveedores.forEach(({ nombre, apellido, empresa, numero, horarios }, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${nombre}</td>
-                    <td>${apellido}</td>
-                    <td>${empresa}</td>
-                    <td>${numero}</td>
-                    <td>${horarios}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editarProveedor(${index})">Editar</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        function editarProveedor(index) {
-            const { nombre, apellido, empresa, numero, horarios } = proveedores[index];
-            document.getElementById('nombre').value = nombre;
-            document.getElementById('apellido').value = apellido;
-            document.getElementById('empresa').value = empresa;
-            document.getElementById('numero').value = numero;
-            document.getElementById('horarios').value = horarios;
-        }
-
-        window.onload = cargarProveedores;
-
-        document.getElementById('modificarProveedorForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const nombre = document.getElementById('nombre').value;
-            const apellido = document.getElementById('apellido').value;
-            const empresa = document.getElementById('empresa').value;
-            const numero = document.getElementById('numero').value;
-            const horarios = document.getElementById('horarios').value;
-
-            // Simulación de actualización
-            alert('Proveedor actualizado con éxito');
-            cargarProveedores();
-        });
-    </script>
+    <!-- Cargar el archivo JS principal -->
+    <script src="/main.js"></script>
 </body>
 </html>
