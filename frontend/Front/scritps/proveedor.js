@@ -1,3 +1,4 @@
+// Configuración global
 const API_BASE_URL = 'http://localhost:5000/api';
 
 // Utilidad para manejar errores de red
@@ -57,6 +58,26 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
         throw new NetworkError('Error de conexión con el servidor', 500);
     }
 }
+
+function validateField(value, fieldName, options = {}) {
+    if (!value || value.toString().trim() === '') {
+        throw new Error(`El campo ${fieldName} es requerido`);
+    }
+    
+    if (options.numeric && isNaN(value)) {
+        throw new Error(`El campo ${fieldName} debe ser numérico`);
+    }
+    
+    if (options.phone) {
+        const phoneRegex = /^\+?[\d\s-]{10,15}$/;
+        if (!phoneRegex.test(value)) {
+            throw new Error(`El formato del ${fieldName} no es válido`);
+        }
+    }
+}
+
+
+
 // Manejador del formulario de proveedores (reemplazar el existente)
 document.getElementById('addProveedorForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -83,7 +104,7 @@ document.getElementById('addProveedorForm')?.addEventListener('submit', async (e
 
         // Usar la función sendRequest en lugar de fetch directo
         const response = await sendRequest('/proveedor/crear', 'POST', formData);
-        
+         
         alert(response.message || 'Proveedor guardado exitosamente');
         document.getElementById('addProveedorForm').reset();
     } catch (error) {
@@ -199,4 +220,8 @@ document.getElementById('modificarProveedorForm').addEventListener('submit', asy
 });
 
 // Cargar los proveedores al cargar la página
-window.onload = cargarProveedores;
+window.onload = () => {
+    cargarInsumos();
+    // Agrega otras funciones que necesites cargar al inicio
+};
+

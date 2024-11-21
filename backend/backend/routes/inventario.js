@@ -85,22 +85,25 @@ router.put('/actualizar/:id', (req, res) => {
 
 
 // Endpoint para eliminar un insumo
-router.put('/inventario/eliminar/:id', async (req, res) => {
-    const insumoId = req.params.id;
+router.delete('/eliminar/:id', (req, res) => {
+    const { id } = req.params;
 
-    try {
-        // Eliminar el insumo de la base de datos
-        const result = await eliminarInsumoDeBaseDeDatos(insumoId);
+    const query = 'DELETE FROM inventario WHERE Id = ?';
 
-        if (result) {
-            res.json({ success: true, message: 'Insumo eliminado' });
-        } else {
-            res.status(404).json({ success: false, message: 'No se encontró el insumo' });
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Error al eliminar el insumo:', err);
+            return res.status(500).json({ message: 'Error al eliminar el insumo.' });
         }
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error al eliminar el insumo' });
-    }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'Insumo no encontrado.' });
+        }
+
+        res.json({ message: 'Insumo eliminado correctamente.' });
+    });
 });
+
 
 
 export default router;
