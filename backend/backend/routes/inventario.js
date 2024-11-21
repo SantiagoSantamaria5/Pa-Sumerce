@@ -147,7 +147,4 @@ router.delete('/eliminar/:id', (req, res) => {
         res.json({ message: 'Insumo eliminado correctamente.' });
     });
 });
-
-
-
 export default router;

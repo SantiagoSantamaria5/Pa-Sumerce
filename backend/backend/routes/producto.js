@@ -3,302 +3,131 @@ import db from '../config/db.js';
 
 const router = express.Router();
 
-// Crear un nuevo producto
+/// Crear un nuevo producto
+// Ruta para agregar un producto
 router.post('/agregar', (req, res) => {
-    const { nombre, ingredientes, precio } = req.body;
+    const { nombre, precio, ingredientes } = req.body;
 
     // Validaciones iniciales
     if (!nombre || !ingredientes || precio == null) {
         return res.status(400).json({
             success: false,
-            message: 'Nombre, ingredientes y precio son requeridos',
+            message: 'Nombre, precio y ingredientes son requeridos',
         });
     }
 
-    // Iniciar transacción para manejar múltiples inserciones
+    // Iniciar transacción para manejar múltiples operaciones
     db.beginTransaction((err) => {
         if (err) {
             return res.status(500).json({
                 success: false,
-                message: 'Error al iniciar transacción',
+                message: 'Error al iniciar la transacción',
             });
         }
 
-        // Primero, insertar en la tabla de inventario
-        const inventarioQuery = `
-            INSERT INTO inventario 
-            (nombre, cantidad, fechaAdquisicion, fechaVencimiento, valorUnitario) 
-            VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR), ?)
+        // Insertar el producto en la tabla producto
+        const insertProductoQuery = `
+            INSERT INTO producto (Nombre, PrecioTotal)
+            VALUES (?, ?)
         `;
 
-        // Calcular cantidad total de ingredientes
-        const cantidadTotal = ingredientes.reduce((sum, ing) => sum + parseInt(ing.gramos), 0);
-
-        db.query(inventarioQuery, [nombre, cantidadTotal, precio], (err, inventarioResult) => {
+        db.query(insertProductoQuery, [nombre, Math.round(precio * 100)], (err, productoResult) => {
             if (err) {
                 return db.rollback(() => {
                     res.status(500).json({
                         success: false,
-                        message: 'Error al crear inventario',
+                        message: 'Error al crear el producto',
                         error: err
                     });
                 });
             }
 
-            const idInventario = inventarioResult.insertId;
+            const idProducto = productoResult.insertId;
 
-            // Insertar en la tabla de producto
-            const productoQuery = `
-                INSERT INTO producto 
-                (Nombre, idInventario, PrecioTotal) 
-                VALUES (?, ?, ?)
-            `;
+            // Procesar los ingredientes
+            const ingredientePromises = ingredientes.map(ingrediente => {
+                return new Promise((resolve, reject) => {
+                    // Verificar que el inventario tenga suficiente cantidad de gramos
+                    const verificarInventarioQuery = `
+                        SELECT gramos FROM inventario
+                        WHERE idIngrediente = ?
+                    `;
 
-            db.query(productoQuery, [nombre, idInventario, Math.round(precio * 100)], (err, productoResult) => {
-                if (err) {
+                    db.query(verificarInventarioQuery, [ingrediente.idIngrediente], (err, inventario) => {
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        const gramosDisponibles = inventario[0]?.gramos || 0;
+
+                        if (gramosDisponibles < ingrediente.gramos) {
+                            return reject(`No hay suficiente cantidad de ${ingrediente.nombre}`);
+                        }
+
+                        // Descontar los gramos en el inventario
+                        const actualizarInventarioQuery = `
+                            UPDATE inventario
+                            SET gramos = gramos - ?
+                            WHERE idIngrediente = ?
+                        `;
+
+                        db.query(actualizarInventarioQuery, [ingrediente.gramos, ingrediente.idIngrediente], (err) => {
+                            if (err) {
+                                return reject(err);
+                            }
+
+                            // Insertar la relación entre el producto y el ingrediente
+                            const insertarProductoIngredienteQuery = `
+                                INSERT INTO producto_ingrediente (idProducto, idIngrediente, gramos)
+                                VALUES (?, ?, ?)
+                            `;
+
+                            db.query(insertarProductoIngredienteQuery, [idProducto, ingrediente.idIngrediente, ingrediente.gramos], (err) => {
+                                if (err) {
+                                    return reject(err);
+                                }
+                                resolve();
+                            });
+                        });
+                    });
+                });
+            });
+
+            // Esperar que todos los ingredientes se procesen
+            Promise.all(ingredientePromises)
+                .then(() => {
+                    // Confirmar transacción
+                    db.commit((err) => {
+                        if (err) {
+                            return db.rollback(() => {
+                                res.status(500).json({
+                                    success: false,
+                                    message: 'Error al confirmar la transacción',
+                                });
+                            });
+                        }
+
+                        // Responder con éxito
+                        res.status(201).json({
+                            success: true,
+                            message: 'Producto creado exitosamente',
+                            idProducto,
+                        });
+                    });
+                })
+                .catch((err) => {
+                    // Revertir en caso de error
                     return db.rollback(() => {
                         res.status(500).json({
                             success: false,
-                            message: 'Error al crear producto',
+                            message: 'Error al procesar los ingredientes o actualizar inventario',
                             error: err
                         });
                     });
-                }
-
-                // Procesar ingredientes (actualizar materia prima)
-                const ingredientePromises = ingredientes.map(ingrediente => {
-                    return new Promise((resolve, reject) => {
-                        const updateIngredienteQuery = `
-                            UPDATE materiaprima 
-                            SET cantidad = cantidad - ? 
-                            WHERE nombre = ?
-                        `;
-
-                        db.query(updateIngredienteQuery, [ingrediente.gramos, ingrediente.ingrediente], (err) => {
-                            if (err) reject(err);
-                            else resolve();
-                        });
-                    });
                 });
-
-                Promise.all(ingredientePromises)
-                    .then(() => {
-                        db.commit((err) => {
-                            if (err) {
-                                return db.rollback(() => {
-                                    res.status(500).json({
-                                        success: false,
-                                        message: 'Error al confirmar transacción',
-                                        error: err
-                                    });
-                                });
-                            }
-                            res.status(201).json({
-                                success: true,
-                                message: 'Producto creado exitosamente',
-                                id: productoResult.insertId,
-                                nombre: nombre
-                            });
-                        });
-                    })
-                    .catch((err) => {
-                        return db.rollback(() => {
-                            res.status(500).json({
-                                success: false,
-                                message: 'Error al procesar ingredientes',
-                                error: err
-                            });
-                        });
-                    });
-            });
         });
     });
 });
 
-// Listar todos los productos
-router.get('/listar', (req, res) => {
-    const query = `
-        SELECT p.idProducto, p.Nombre, p.PrecioTotal/100 as Precio, 
-               i.cantidad as Cantidad, i.fechaAdquisicion, i.fechaVencimiento
-        FROM producto p
-        JOIN inventario i ON p.idInventario = i.Id
-    `;
-    
-    db.query(query, (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error al obtener productos',
-                error: err
-            });
-        }
-        res.json({
-            success: true,
-            productos: results
-        });
-});
-});
-
-// Obtener un producto por ID
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    const query = `
-        SELECT p.idProducto, p.Nombre, p.PrecioTotal/100 as Precio, 
-               i.cantidad as Cantidad, i.fechaAdquisicion, i.fechaVencimiento
-        FROM producto p
-        JOIN inventario i ON p.idInventario = i.Id
-        WHERE p.idProducto = ?
-    `;
-    
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error al obtener producto',
-                error: err
-            });
-        }
-        if (results.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Producto no encontrado'
-            });
-        }
-        res.json({
-            success: true,
-            producto: results[0]
-        });
-    });
-});
-
-// Actualizar un producto
-router.put('/actualizar/:id', (req, res) => {
-    const { id } = req.params;
-    const { nombre, precio } = req.body;
-
-    // Comenzar transacción
-    db.beginTransaction((err) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error al iniciar transacción'
-            });
-        }
-
-        // Actualizar producto
-        const updateProductoQuery = `
-            UPDATE producto p
-            JOIN inventario i ON p.idInventario = i.Id
-            SET p.Nombre = ?, 
-                p.PrecioTotal = ?,
-                i.nombre = ?,
-                i.valorUnitario = ?
-            WHERE p.idProducto = ?
-        `;
-
-        db.query(updateProductoQuery, [
-            nombre, 
-            Math.round(precio * 100), 
-            nombre, 
-            precio, 
-            id
-        ], (err, result) => {
-            if (err) {
-                return db.rollback(() => {
-                    res.status(500).json({
-                        success: false,
-                        message: 'Error al actualizar producto',
-                        error: err
-                    });
-                });
-            }
-
-            if (result.affectedRows === 0) {
-                return db.rollback(() => {
-                    res.status(404).json({
-                        success: false,
-                        message: 'Producto no encontrado'
-                    });
-                });
-            }
-
-            db.commit((err) => {
-                if (err) {
-                    return db.rollback(() => {
-                        res.status(500).json({
-                            success: false,
-                            message: 'Error al confirmar transacción'
-                        });
-                    });
-                }
-
-                res.json({
-                    success: true,
-                    message: 'Producto actualizado exitosamente'
-                });
-            });
-        });
-    });
-});
-
-// Eliminar un producto
-router.delete('/eliminar/:id', (req, res) => {
-    const { id } = req.params;
-
-    // Comenzar transacción
-    db.beginTransaction((err) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error al iniciar transacción'
-            });
-        }
-
-        // Eliminar producto y su registro de inventario
-        const deleteQuery = `
-            DELETE p, i 
-            FROM producto p
-            JOIN inventario i ON p.idInventario = i.Id
-            WHERE p.idProducto = ?
-        `;
-
-        db.query(deleteQuery, [id], (err, result) => {
-            if (err) {
-                return db.rollback(() => {
-                    res.status(500).json({
-                        success: false,
-                        message: 'Error al eliminar producto',
-                        error: err
-                    });
-                });
-            }
-
-            if (result.affectedRows === 0) {
-                return db.rollback(() => {
-                    res.status(404).json({
-                        success: false,
-                        message: 'Producto no encontrado'
-                    });
-                });
-            }
-
-            db.commit((err) => {
-                if (err) {
-                    return db.rollback(() => {
-                        res.status(500).json({
-                            success: false,
-                            message: 'Error al confirmar transacción'
-                        });
-                    });
-                }
-
-                res.json({
-                    success: true,
-                    message: 'Producto eliminado exitosamente'
-                });
-            });
-        });
-    });
-});
 
 export default router;

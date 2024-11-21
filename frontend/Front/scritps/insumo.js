@@ -95,6 +95,56 @@ function escapeHTML(text) {
     return element.innerHTML;
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    // Asegurarte de que las funciones de carga de insumos y proveedores se ejecuten de forma independiente
+    cargarInsumos();
+    cargarProveedor();
+
+    // Lógica del formulario de agregar insumo
+    document.getElementById('addInsumoForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        
+        const nombre = document.getElementById('nombre').value.trim();
+        const cantidad = parseFloat(document.getElementById('cantidad').value);
+        const idProveedor = document.getElementById('proveedorSelect').value;
+        const fechaAdquisicion = document.getElementById('fechaAdquisicion').value;
+        const fechaVencimiento = document.getElementById('fechaVencimiento').value;
+        const valorUnitario = parseFloat(document.getElementById('valorUnitario').value);
+    
+        console.log({ nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario });
+    
+        try {
+            if (!nombre) throw new Error('El nombre es obligatorio.');
+            if (isNaN(cantidad) || cantidad <= 0) throw new Error('La cantidad debe ser un número positivo.');
+            if (!idProveedor) throw new Error('Por favor, seleccione un proveedor.');
+            if (!fechaAdquisicion || !fechaVencimiento) throw new Error('Las fechas son obligatorias.');
+            if (new Date(fechaAdquisicion) > new Date(fechaVencimiento)) throw new Error('La fecha de adquisición no puede ser posterior a la de vencimiento.');
+            if (isNaN(valorUnitario) || valorUnitario <= 0) throw new Error('El valor unitario debe ser un número positivo.');
+    
+            const result = await sendRequest('/inventario/crear', 'POST', {
+                nombre,
+                cantidad,
+                idProveedor,
+                fechaAdquisicion,
+                fechaVencimiento,
+                valorUnitario,
+            });
+    
+            if (result.success) {
+                showAlert('Insumo creado con éxito.', 'success');
+                document.getElementById('addInsumoForm').reset();
+            } else {
+                showAlert(`Error al crear insumo: ${result.message}`, 'danger');
+            }
+        } catch (error) {
+            showAlert(error.message, 'danger');
+            console.error('Error al enviar el formulario:', error);
+        }
+    });
+    
+});
+
+
 async function cargarInsumos() {
     try {
         // Solicitar los insumos al servidor
