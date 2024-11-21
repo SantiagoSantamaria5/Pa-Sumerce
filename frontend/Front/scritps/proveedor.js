@@ -10,6 +10,39 @@ class NetworkError extends Error {
     }
 }
 
+/**
+ * Muestra una alerta estilizada con Bootstrap.
+ * @param {string} message - Mensaje a mostrar.
+ * @param {string} type - Tipo de alerta (success, danger, warning, info, etc.).
+ * @param {number} duration - Duración en milisegundos antes de que desaparezca automáticamente (opcional).
+ */
+function showAlert(message, type = 'info', duration = 5000) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.role = 'alert';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    const container = document.getElementById('alert-container');
+    container.appendChild(alert);
+
+    if (duration > 0) {
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 150);
+        }, duration);
+    }
+}
+
+/**
+ * Realiza una solicitud al servidor.
+ * @param {string} endpoint - Ruta del API.
+ * @param {string} method - Método HTTP (GET, POST, PUT, DELETE).
+ * @param {object|null} body - Cuerpo de la solicitud (opcional).
+ */
+
 // Función simplificada para realizar solicitudes al backend
 async function sendRequest(endpoint, method = 'GET', body = null) {
     const options = {
@@ -18,7 +51,7 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
             'Content-Type': 'application/json',
         },
         mode: 'cors',
-        credentials: 'omit', // Cambiado a 'omit' para pruebas iniciales
+        credentials: 'omit',
     };
 
     if (body) {
@@ -26,27 +59,15 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
     }
 
     try {
-        console.log('Sending request to:', `${API_BASE_URL}${endpoint}`, options);
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        
-        // Log de la respuesta para debugging
-        console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
-
-        // Intentar obtener el cuerpo de la respuesta
-        let data;
         const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            data = await response.text();
-        }
+        const data = contentType && contentType.includes('application/json')
+            ? await response.json()
+            : await response.text();
 
         if (!response.ok) {
-            throw new NetworkError(
-                typeof data === 'object' ? data.message : data,
-                response.status
-            );
+            const message = typeof data === 'object' ? data.message : data;
+            throw new NetworkError(message || 'Error en la solicitud', response.status);
         }
 
         return data;
@@ -55,23 +76,24 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
         if (error instanceof NetworkError) {
             throw error;
         }
-        throw new NetworkError('Error de conexión con el servidor', 500);
+        throw new NetworkError('Error de conexión con el servidor.', 500);
     }
 }
 
+// Función para validar campos del formulario
 function validateField(value, fieldName, options = {}) {
     if (!value || value.toString().trim() === '') {
-        throw new Error(`El campo ${fieldName} es requerido`);
+        throw new Error(`El campo ${fieldName} es requerido.`);
     }
-    
+
     if (options.numeric && isNaN(value)) {
-        throw new Error(`El campo ${fieldName} debe ser numérico`);
+        throw new Error(`El campo ${fieldName} debe ser numérico.`);
     }
-    
+
     if (options.phone) {
         const phoneRegex = /^\+?[\d\s-]{10,15}$/;
         if (!phoneRegex.test(value)) {
-            throw new Error(`El formato del ${fieldName} no es válido`);
+            throw new Error(`El formato del ${fieldName} no es válido.`);
         }
     }
 }
@@ -87,49 +109,43 @@ document.getElementById('addProveedorForm')?.addEventListener('submit', async (e
     submitButton.textContent = 'Guardando...';
 
     const formData = {
-        nombre: document.getElementById('nombre').value,
-        apellido: document.getElementById('apellido').value,
-        empresa: document.getElementById('empresa').value,
-        telefono: document.getElementById('numero').value,
-        horarios: document.getElementById('horarios').value
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        empresa: document.getElementById('empresa').value.trim(),
+        telefono: document.getElementById('numero').value.trim(),
+        horarios: document.getElementById('horarios').value.trim(),
     };
 
     try {
-        // Validaciones
         validateField(formData.nombre, 'Nombre');
         validateField(formData.apellido, 'Apellido');
         validateField(formData.empresa, 'Empresa');
         validateField(formData.telefono, 'Teléfono', { phone: true });
         validateField(formData.horarios, 'Horarios');
 
-        // Usar la función sendRequest en lugar de fetch directo
         const response = await sendRequest('/proveedor/crear', 'POST', formData);
-         
-        alert(response.message || 'Proveedor guardado exitosamente');
+
+        showAlert(response.message || 'Proveedor guardado exitosamente.', 'success');
         document.getElementById('addProveedorForm').reset();
     } catch (error) {
+        showAlert(error.message, 'danger');
         console.error('Error al guardar proveedor:', error);
-        alert(`Error: ${error.message}`);
     } finally {
         submitButton.disabled = false;
-        submitButton.textContent = 'Guardar!';
+        submitButton.textContent = 'Guardar';
     }
 });
 
-
-// Obtener y cargar proveedores desde el backend
 // Obtener y cargar proveedores desde el backend
 async function cargarProveedores() {
     try {
-        // Solicitar los proveedores al servidor
-        const { success, data } = await sendRequest('/proveedor/ver', 'GET'); // Llamar al endpoint usando sendRequest
-        
-        if (!success) throw new Error('No se pudieron obtener los proveedores');
+        const { success, data } = await sendRequest('/proveedor/ver', 'GET');
+
+        if (!success) throw new Error('No se pudieron obtener los proveedores.');
 
         const tableBody = document.getElementById('proveedoresTableBody');
         tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
 
-        // Renderizar cada proveedor en la tabla
         data.forEach(({ Id, nombre, apellido, empresa, telefono, horarios }) => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -138,7 +154,6 @@ async function cargarProveedores() {
                 <td>${empresa}</td>
                 <td>${telefono}</td>
                 <td>${horarios}</td>
-                
                 <td>
                     <button class="btn btn-warning btn-sm" 
                         onclick="editarProveedor(${Id}, '${nombre}', '${apellido}', '${empresa}', '${telefono}', '${horarios}')">
@@ -152,31 +167,29 @@ async function cargarProveedores() {
             `;
             tableBody.appendChild(row);
         });
+
+        showAlert('Proveedores cargados correctamente.', 'info', 3000);
     } catch (error) {
+        showAlert('Error al cargar proveedores.', 'danger');
         console.error('Error al cargar proveedores:', error);
-        alert('Hubo un problema al cargar los proveedores.');
     }
 }
 
-
 // Función para eliminar un proveedor
-async function eliminarProveedor(id) {  
-    const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este proveedor?');
-    if (confirmDelete) {
+async function eliminarProveedor(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar este proveedor?')) {
         try {
-            // Realizar la solicitud DELETE a la API para eliminar el proveedor
             const response = await sendRequest(`/proveedor/eliminar/${id}`, 'DELETE');
-            
-            // Verificar la respuesta usando response en lugar de success
+
             if (response.success) {
-                alert('Proveedor eliminado con éxito');
-                cargarProveedores(); // Recargar la lista de proveedores después de eliminar
+                showAlert('Proveedor eliminado con éxito.', 'success');
+                cargarProveedores();
             } else {
-                alert(`Error al eliminar el proveedor: ${response.message}`);
+                throw new Error(response.message);
             }
         } catch (error) {
+            showAlert(`Error al eliminar el proveedor: ${error.message}`, 'danger');
             console.error('Error al eliminar proveedor:', error);
-            alert('Hubo un problema al eliminar el proveedor: ' + error.message);
         }
     }
 }
@@ -190,38 +203,37 @@ function editarProveedor(id, nombre, apellido, empresa, numero, horarios) {
     document.getElementById('numero').value = numero;
     document.getElementById('horarios').value = horarios;
 
-    // Guardar el ID del proveedor en un atributo del formulario
     document.getElementById('modificarProveedorForm').dataset.proveedorId = id;
 }
 
 // Enviar los datos actualizados al servidor
-document.getElementById('modificarProveedorForm').addEventListener('submit', async (e) => {
+document.getElementById('modificarProveedorForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const id = e.target.dataset.proveedorId; // ID del proveedor a actualizar
-    const nombre = document.getElementById('nombre').value;
-    const apellido = document.getElementById('apellido').value;
-    const empresa = document.getElementById('empresa').value;
-    const numero = document.getElementById('numero').value;
-    const horarios = document.getElementById('horarios').value;
+    const id = e.target.dataset.proveedorId;
+    const formData = {
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        empresa: document.getElementById('empresa').value.trim(),
+        telefono: document.getElementById('numero').value.trim(),
+        horarios: document.getElementById('horarios').value.trim(),
+    };
 
     try {
-        // Enviar datos actualizados al servidor usando sendRequest
-        const response = await sendRequest(`/proveedor/actualizar/${id}`, 'PUT', { nombre, apellido, empresa, numero, horarios });
+        const response = await sendRequest(`/proveedor/actualizar/${id}`, 'PUT', formData);
 
-        if (!response.success) throw new Error(response.message);
-
-        alert('Proveedor actualizado con éxito');
-        cargarProveedores(); // Recargar la tabla
+        if (response.success) {
+            showAlert('Proveedor actualizado con éxito.', 'success');
+            cargarProveedores();
+        } else {
+            throw new Error(response.message);
+        }
     } catch (error) {
+        showAlert(`Error al actualizar el proveedor: ${error.message}`, 'danger');
         console.error('Error al actualizar proveedor:', error);
-        alert('No se pudo actualizar el proveedor.');
     }
 });
 
 // Cargar los proveedores al cargar la página
-window.onload = () => {
-    cargarInsumos();
-    // Agrega otras funciones que necesites cargar al inicio
-};
+document.addEventListener('DOMContentLoaded', cargarProveedores);
 

@@ -100,22 +100,30 @@ router.get('/:id', (req, res) => {
 // Actualizar un insumo
 router.put('/actualizar/:id', (req, res) => {
     const { id } = req.params;
-    const { nombre, cantidad, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
-
+    const { nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
     const query = `
-        UPDATE inventario 
-        SET nombre = ?, cantidad = ?, fechaAdquisicion = ?, fechaVencimiento = ?, valorUnitario = ?
+        UPDATE inventario
+        SET nombre = ?, cantidad = ?, idProveedor = ?, fechaAdquisicion = ?, fechaVencimiento = ?, valorUnitario = ?
         WHERE Id = ?
     `;
-    db.query(query, [nombre, cantidad, fechaAdquisicion, fechaVencimiento, valorUnitario, id], (err, results) => {
+    db.query(query, [nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario, id], (err, results) => {
         if (err) {
             console.error('Error al actualizar el insumo:', err);
-            return res.status(500).json({ message: 'Error al actualizar el insumo.' });
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Error al actualizar el insumo.' 
+            });
         }
         if (results.affectedRows === 0) {
-            return res.status(404).json({ message: 'Insumo no encontrado.' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Insumo no encontrado.' 
+            });
         }
-        res.json({ message: 'Insumo actualizado exitosamente.' });
+        res.json({ 
+            success: true, 
+            message: 'Insumo actualizado exitosamente.' 
+        });
     });
 });
 
