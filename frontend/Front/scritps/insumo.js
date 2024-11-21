@@ -11,7 +11,41 @@ class NetworkError extends Error {
     }
 }
 
-// Función simplificada para realizar solicitudes al backend
+
+/**
+ * Muestra una alerta estilizada con Bootstrap.
+ * @param {string} message - Mensaje a mostrar.
+ * @param {string} type - Tipo de alerta (success, danger, warning, info, etc.).
+ * @param {number} duration - Duración en milisegundos antes de que desaparezca automáticamente (opcional).
+ */
+function showAlert(message, type = 'info', duration = 5000) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.role = 'alert';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    const container = document.getElementById('alert-container');
+    container.appendChild(alert);
+
+    if (duration > 0) {
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 150);
+        }, duration);
+    }
+}
+
+/**
+ * Realiza una solicitud al servidor.
+ * @param {string} endpoint - Ruta del API.
+ * @param {string} method - Método HTTP (GET, POST, PUT, DELETE).
+ * @param {object|null} body - Cuerpo de la solicitud (opcional).
+ */
+
+
 async function sendRequest(endpoint, method = 'GET', body = null) {
     const options = {
         method,
@@ -19,7 +53,7 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
             'Content-Type': 'application/json',
         },
         mode: 'cors',
-        credentials: 'omit', // Cambiado a 'omit' para pruebas iniciales
+        credentials: 'omit',
     };
 
     if (body) {
@@ -27,71 +61,70 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
     }
 
     try {
-        console.log('Sending request to:', `${API_BASE_URL}${endpoint}`, options);
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-
-        // Log de la respuesta para debugging
-        console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
-
-        // Intentar obtener el cuerpo de la respuesta
-        let data;
         const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            data = await response.text();
-        }
+        const data = contentType && contentType.includes('application/json')
+            ? await response.json()
+            : await response.text();
 
         if (!response.ok) {
-            throw new NetworkError(
-                typeof data === 'object' ? data.message || 'Error desconocido' : data,
-                response.status
-            );
+            const message = typeof data === 'object' ? data.message : data;
+            throw new NetworkError(message || 'Error en la solicitud', response.status);
         }
 
-        return data; // Asegúrate de devolver siempre la data
+        return data;
     } catch (error) {
         console.error('Error completo:', error);
         if (error instanceof NetworkError) {
             throw error;
         }
-        throw new NetworkError('Error de conexión con el servidor', 500);
+        throw new NetworkError('Error de conexión con el servidor.', 500);
     }
 }
 
 
-document.getElementById('addInsumoForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+// Función simplificada para realizar solicitudes al backend
+document.getElementById('addInsumoForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
 
-    const formData = {
-        nombre: document.getElementById('nombre').value,
-        cantidad: document.getElementById('cantidad').value,
-        fechaAdquisicion: document.getElementById('fechaAdquisicion').value,
-        fechaVencimiento: document.getElementById('fechaVencimiento').value,
-        valorUnitario: document.getElementById('valorUnitario').value
-    };
+    const nombre = document.getElementById('nombre').value.trim();
+    const cantidad = parseFloat(document.getElementById('cantidad').value);
+    const proveedorId = document.getElementById('proveedorSelect').value;
+    const fechaAdquisicion = document.getElementById('fechaAdquisicion').value;
+    const fechaVencimiento = document.getElementById('fechaVencimiento').value;
+    const valorUnitario = parseFloat(document.getElementById('valorUnitario').value);
 
     try {
-        // Validaciones
-        validateField(formData.nombre, 'Nombre');
-        validateField(formData.cantidad, 'Cantidad', { numeric: true });
-        validateField(formData.fechaAdquisicion, 'Fecha de adquisición');
-        validateField(formData.fechaVencimiento, 'Fecha de vencimiento');
-        validateField(formData.valorUnitario, 'Valor unitario', { numeric: true });
+        if (!nombre) throw new Error('El nombre es obligatorio.');
+        if (isNaN(cantidad) || cantidad <= 0) throw new Error('La cantidad debe ser un número positivo.');
+        if (!proveedorId) throw new Error('Por favor, seleccione un proveedor.');
+        if (!fechaAdquisicion || !fechaVencimiento) throw new Error('Las fechas son obligatorias.');
+        if (new Date(fechaAdquisicion) > new Date(fechaVencimiento)) throw new Error('La fecha de adquisición no puede ser posterior a la de vencimiento.');
+        if (isNaN(valorUnitario) || valorUnitario <= 0) throw new Error('El valor unitario debe ser un número positivo.');
 
-        // Validación adicional de fechas
-        if (new Date(formData.fechaVencimiento) <= new Date(formData.fechaAdquisicion)) {
-            throw new Error('La fecha de vencimiento debe ser posterior a la fecha de adquisición');
+        const result = await sendRequest('/inventario/crear', 'POST', {
+            nombre,
+            cantidad,
+            proveedorId,
+            fechaAdquisicion,
+            fechaVencimiento,
+            valorUnitario,
+        });
+
+        if (result.success) {
+            showAlert('Insumo creado con éxito.', 'success');
+            document.getElementById('addInsumoForm').reset();
+        } else {
+            showAlert(`Error al crear insumo: ${result.message}`, 'danger');
         }
-
-        const response = await sendRequest('/inventario/crear', 'POST', formData);
-        alert(response.message);
-        document.getElementById('addInsumoForm').reset();
     } catch (error) {
-        alert(`Error: ${error.message}`);
+        showAlert(error.message, 'danger');
+        console.error('Error al enviar el formulario:', error);
     }
 });
+
+
+
 async function cargarInsumos() {
     try {
         // Solicitar los insumos al servidor
@@ -109,8 +142,8 @@ async function cargarInsumos() {
             insumoSelect.appendChild(option);
         });
     } catch (error) {
+        showAlert(error.message, 'danger');
         console.error('Error al cargar los insumos:', error);
-        alert('Hubo un problema al cargar los insumos.');
     }
 }
 
@@ -151,9 +184,8 @@ async function actualizarInsumo(event) {
     const fechaAdquisicion = document.getElementById('fechaAdquisicion').value;
     const fechaVencimiento = document.getElementById('fechaVencimiento').value;
     const valorUnitario = document.getElementById('valorUnitario').value;
-
     if (!insumoId || !cantidad || !fechaAdquisicion || !fechaVencimiento || !valorUnitario) {
-        alert('Por favor, complete todos los campos.');
+        showAlert('Por favor, complete todos los campos.','danger');
         return;
     }
 
@@ -173,14 +205,14 @@ async function actualizarInsumo(event) {
         if (response && response.message) {
             alert(`Insumo actualizado: ${response.message}`);
         } else {
-            alert('Insumo actualizado correctamente.');
+            showAlert('Por favor, complete todos los campos.','success');
         }
 
         // Opcional: recargar los insumos para reflejar los cambios en el select
         await cargarInsumos();
     } catch (error) {
+        showAlert(error.message, 'danger');
         console.error('Error al actualizar el insumo:', error);
-        alert(`Hubo un problema al actualizar el insumo: ${error.message}`);
     }
 }
 
@@ -226,7 +258,7 @@ async function eliminarInsumo() {
     const insumoId = document.getElementById('insumoSelect').value;
 
     if (!insumoId) {
-        alert('Por favor, seleccione un insumo para eliminar.');
+        showAlert('Por favor, seleccione un insumo para eliminar.','danger');
         return;
     }
 
@@ -239,12 +271,51 @@ async function eliminarInsumo() {
         const response = await sendRequest(`/inventario/eliminar/${insumoId}`, 'DELETE');
 
         // Mostrar un mensaje de éxito
-        alert(`Insumo eliminado: ${response.message || 'Se eliminó correctamente el insumo.'}`);
+        showAlert(`Insumo eliminado: ${response.message || 'Se eliminó correctamente el insumo.'}`,'success');
 
         // Recargar la lista de insumos para reflejar los cambios
         await cargarInsumos();
     } catch (error) {
-        console.error('Error al eliminar el insumo:', error);
-        alert(`Hubo un problema al eliminar el insumo: ${error.message}`);
+        showAlert(error.message, 'danger');
+        console.error('Error al eliminar los insumos:', error);
     }
 }
+
+async function cargarProveedor() {
+    try {
+        const response = await sendRequest('/proveedor/ver', 'GET');
+
+        if (!response.success || !Array.isArray(response.data)) {
+            throw new Error('No se pudieron cargar los proveedores.');
+        }
+
+        const proveedorSelect = document.getElementById('proveedorSelect');
+        proveedorSelect.innerHTML = '<option value="">Seleccione el proveedor correspondiente</option>';
+
+        response.data.forEach(proveedor => {
+            const option = document.createElement('option');
+            option.value = proveedor.Id;
+            option.textContent = `${escapeHTML(proveedor.nombre)} ${escapeHTML(proveedor.apellido)} (${escapeHTML(proveedor.empresa)})`;
+            proveedorSelect.appendChild(option);
+        });
+
+        showAlert('Proveedores cargados correctamente.', 'info', 3000);
+    } catch (error) {
+        showAlert('Error al cargar proveedores.', 'danger');
+        console.error(error);
+    }
+}
+
+// Escapar caracteres peligrosos para prevenir XSS
+function escapeHTML(text) {
+    const element = document.createElement('div');
+    element.innerText = text || '';
+    return element.innerHTML;
+}
+
+
+// Llama a cargarProveedor cuando cargue la página
+document.addEventListener('DOMContentLoaded', () => {
+    cargarProveedor();
+});
+

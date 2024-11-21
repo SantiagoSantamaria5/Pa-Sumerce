@@ -5,10 +5,14 @@ const router = express.Router();
 
 // Crear un insumo en inventario
 router.post('/crear', (req, res) => {
-    const { nombre, cantidad, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
+    const { nombre,  cantidad, idProveedor ,fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
 
-    if (!nombre || cantidad == null || !fechaAdquisicion || !fechaVencimiento || valorUnitario == null) {
-        return res.status(400).json({ message: 'Todos los campos son requeridos.' });
+    // Validar que todos los campos estén presentes
+    if (!nombre || cantidad == null || !idProveedor || !fechaAdquisicion || !fechaVencimiento || valorUnitario == null ) {
+        return res.status(400).json({
+            success: false,
+            message: 'Todos los campos son requeridos',
+        });
     }
 
     // Validar si las fechas son válidas
@@ -16,21 +20,53 @@ router.post('/crear', (req, res) => {
     const fechaVencimientoDate = new Date(fechaVencimiento);
 
     if (isNaN(fechaAdquisicionDate.getTime()) || isNaN(fechaVencimientoDate.getTime())) {
-        return res.status(400).json({ message: 'Las fechas deben ser válidas.' });
+        return res.status(400).json({
+            success: false,
+            message: 'Las fechas deben ser válidas.',
+        });
     }
 
-    const query = `
-        INSERT INTO inventario (nombre, cantidad, fechaAdquisicion, fechaVencimiento, valorUnitario)
-        VALUES (?, ?, ?, ?, ?)
-    `;
-    db.query(query, [nombre, cantidad, fechaAdquisicion, fechaVencimiento, valorUnitario], (err, results) => {
+    // Validar que el proveedor exista
+    const proveedorQuery = 'SELECT * FROM proveedor WHERE id = ?';
+    db.query(proveedorQuery, [idProveedor], (err, proveedorResults) => {
         if (err) {
-            console.error('Error al crear el insumo:', err);
-            return res.status(500).json({ message: 'Error al crear el insumo.' });
+            console.error('Error al validar el proveedor:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al validar el proveedor.',
+            });
         }
-        res.status(201).json({ message: 'Insumo creado exitosamente.', id: results.insertId });
+
+        if (proveedorResults.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'El proveedor especificado no existe.',
+            });
+        }
+
+        // Inserción del insumo
+        const insertQuery = `
+            INSERT INTO inventario (nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        db.query(insertQuery, [nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario], (err, results) => {
+            if (err) {
+                console.error('Error al crear el insumo:', err);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error al crear el insumo.',
+                });
+            }
+
+            res.status(201).json({
+                success: true,
+                message: 'Insumo creado exitosamente.',
+                id: results.insertId,
+            });
+        });
     });
 });
+
 
 // Leer todos los insumos
 router.get('/', (req, res) => {

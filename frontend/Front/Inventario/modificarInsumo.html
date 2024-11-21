@@ -8,6 +8,7 @@
         <title>Modificar Insumo</title>
     </head>
     <body>
+        <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
         <!-- Barra superior -->
         <div class="layout-bar top-bar">
             <div class="layout-bar">
@@ -58,7 +59,13 @@
                             <div class="mb-3">
                                 <label for="cantidad" class="form-label"></label>
                                 <input type="number" class="form-control" id="cantidad" required>
-                            </div>
+                            </div >
+                            <div class="mb-3">
+                                <label for="proveedorSelect" class="form-label"></label>
+                                <select class="form-select" id="proveedorSelect">
+                                    <option value="">Seleccione el proveedor correspondiente</option>
+                                </select>                            
+                            </div> 
                             <div class="mb-3">
                                 <label for="fechaAdquisicion" class="form-label"></label>
                                 <input type="date" class="form-control" id="fechaAdquisicion" required>
