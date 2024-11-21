@@ -1,10 +1,14 @@
-import mysql from 'mysql2';
+import mysql from 'mysql2/promise';
 
-const db = mysql.createConnection({
+// Crear un pool de conexiones
+const db = mysql.createPool({
     host: 'localhost',
     user: 'root',
     database: 'inventario_pasumerce',
-    password: '' // Asegúrate de agregar tu contraseña si tienes una
+    password: '', // Si tienes una contraseña, agrégala
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 export default db;

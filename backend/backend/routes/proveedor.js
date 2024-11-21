@@ -3,9 +3,9 @@ import db from '../config/db.js';
 const router = express.Router();
 
 // Ruta para agregar un proveedor
-router.post('/crear', (req, res) => {
+router.post('/crear', async (req, res) => {
     const { nombre, apellido, empresa, telefono, horarios } = req.body;
-    
+
     // Validar que todos los campos estén presentes
     if (!nombre || !apellido || !empresa || !telefono || !horarios) {
         return res.status(400).json({
@@ -19,37 +19,37 @@ router.post('/crear', (req, res) => {
         VALUES (?, ?, ?, ?, ?)
     `;
 
-    db.query(query, [nombre, apellido, empresa, telefono, horarios], (err, results) => {
-        if (err) {
-            console.error('Error en la consulta de inserción:', err);
-            return res.status(500).json({
-                success: false,
-                message: 'Error al guardar el proveedor: ' + err.message,
-            });
-        }
-
+    try {
+        const [results] = await db.query(query, [nombre, apellido, empresa, telefono, horarios]);
         res.status(201).json({
             success: true,
             message: 'Proveedor creado con éxito',
             data: results
         });
-    });
+    } catch (err) {
+        console.error('Error en la consulta de inserción:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al guardar el proveedor: ' + err.message,
+        });
+    }
 });
+
 // Ruta para obtener todos los proveedores
-router.get('/ver', (req, res) => {
+router.get('/ver', async (req, res) => {
     const query = 'SELECT * FROM proveedor';
 
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error al obtener los proveedores:', err);
-            return res.status(500).json({ success: false, message: 'Error al obtener proveedores' });
-        }
-
+    try {
+        const [results] = await db.query(query);
         res.json({ success: true, data: results });
-    });
+    } catch (err) {
+        console.error('Error al obtener los proveedores:', err);
+        return res.status(500).json({ success: false, message: 'Error al obtener proveedores' });
+    }
 });
 
-router.put('/api/proveedor/actualizar/:id', (req, res) => {
+// Ruta para actualizar un proveedor
+router.put('/actualizar/:id', async (req, res) => {
     const { id } = req.params;
     const { nombre, apellido, empresa, numero, horarios } = req.body;
 
@@ -59,31 +59,25 @@ router.put('/api/proveedor/actualizar/:id', (req, res) => {
         WHERE id = ?
     `;
 
-    db.query(query, [nombre, apellido, empresa, numero, horarios, id], (err) => {
-        if (err) {
-            console.error('Error al actualizar proveedor:', err);
-            return res.status(500).json({ success: false, message: 'Error al actualizar proveedor' });
+    try {
+        const [result] = await db.query(query, [nombre, apellido, empresa, numero, horarios, id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Proveedor no encontrado' });
         }
-
         res.json({ success: true, message: 'Proveedor actualizado con éxito' });
-    });
+    } catch (err) {
+        console.error('Error al actualizar proveedor:', err);
+        return res.status(500).json({ success: false, message: 'Error al actualizar proveedor' });
+    }
 });
 
 // Ruta para eliminar un proveedor
-
-router.delete('/eliminar/:id', (req, res) => {
+router.delete('/eliminar/:id', async (req, res) => {
     const { id } = req.params;
     const query = 'DELETE FROM proveedor WHERE id = ?';
 
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error al eliminar el proveedor:', err);
-            return res.status(500).json({
-                success: false,
-                message: 'Error al eliminar el proveedor: ' + err.message,
-            });
-        }
-
+    try {
+        const [results] = await db.query(query, [id]);
         if (results.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
@@ -95,10 +89,13 @@ router.delete('/eliminar/:id', (req, res) => {
             success: true,
             message: 'Proveedor eliminado con éxito',
         });
-    });
+    } catch (err) {
+        console.error('Error al eliminar el proveedor:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al eliminar el proveedor: ' + err.message,
+        });
+    }
 });
-
-
-
 
 export default router;

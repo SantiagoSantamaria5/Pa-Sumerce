@@ -1,5 +1,5 @@
 const API_BASE_URL = 'http://localhost:5000/api';
-let ingrediente = []; // Variable global para almacenar los insumos
+let ingredientes = []; // Variable global para almacenar los insumos
 
 // Utilidad para manejar errores de red
 class NetworkError extends Error {
@@ -33,8 +33,10 @@ function showAlert(message, type = 'info', duration = 5000) {
     }
 }
 
+
 // Función para realizar solicitudes al servidor
 async function sendRequest(endpoint, method = 'GET', body = null) {
+    
     const options = {
         method,
         headers: {
@@ -52,16 +54,25 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         const contentType = response.headers.get('content-type');
         
-        const data = contentType && contentType.includes('application/json')
-            ? await response.json()
-            : await response.text();
-
+        // Verificar si la respuesta fue exitosa
         if (!response.ok) {
-            const message = typeof data === 'object' ? data.message : data;
-            throw new NetworkError(message || 'Error en la solicitud', response.status);
+            throw new NetworkError('Error al procesar la solicitud', response.status);
         }
 
-        return data;
+        const responseText = await response.text();  // Leer la respuesta como texto primero
+        console.log("Respuesta del servidor:", responseText);  // Agregar log
+
+        // Comprobar si la respuesta está vacía
+        if (responseText.trim() === "") {
+            throw new Error('Respuesta vacía del servidor');
+        }
+
+        // Verificar si el contenido es JSON
+        if (contentType && contentType.includes('application/json')) {
+            return JSON.parse(responseText);  // Parsear el JSON si es válido
+        } else {
+            throw new Error('La respuesta no es JSON');
+        }
     } catch (error) {
         console.error('Error completo:', error);
         if (error instanceof NetworkError) {
@@ -71,13 +82,12 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
     }
 }
 
-// Función para cargar los ingredientes desde el inventario
 async function cargarIngredientes() {
     try {
         const response = await sendRequest('/inventario', 'GET');
         
-        // Verificar si la respuesta contiene los ingredientes (ya que no existe 'data')
-        if (!response || response.length === 0) {
+        // Asegurarnos de que la respuesta sea un array de ingredientes
+        if (!Array.isArray(response) || response.length === 0) {
             throw new Error('No se encontraron ingredientes');
         }
 
@@ -86,20 +96,19 @@ async function cargarIngredientes() {
         selectIngredientes.forEach(select => {
             select.innerHTML = '<option value="">Seleccione el ingrediente</option>';
             
-            // Iteramos sobre los resultados directamente, sin la propiedad 'data'
+            // Iteramos sobre los ingredientes y agregamos las opciones al select
             response.forEach(ingrediente => {
                 const option = document.createElement('option');
-                option.value = ingrediente.Id;
-                option.textContent = ingrediente.nombre;
+                option.value = ingrediente.Id;  // Usamos el Id del ingrediente
+                option.textContent = ingrediente.nombre;  // Nombre del ingrediente
                 select.appendChild(option);
             });
         });
     } catch (error) {
         console.error('Error al cargar ingredientes:', error);
-        alert('No se pudieron cargar los ingredientes');
+        showAlert('No se pudieron cargar los ingredientes', 'danger');
     }
 }
-
 
 // Función para agregar un nuevo campo de ingrediente
 function agregarCampoIngrediente() {
@@ -138,91 +147,63 @@ function agregarCampoIngrediente() {
 async function guardarProducto(event) {
     event.preventDefault();
     
-    // Obtener datos del formulario
     const nombreProducto = document.getElementById('nombrePan').value.trim();
+    const PrecioU = parseFloat(document.getElementById('precioUnitario').value.trim());
     
-    // Recopilar ingredientes
-    const ingredientesContainer = document.getElementById('ingredientesContainer');
-    const ingredientesDivs = ingredientesContainer.querySelectorAll('div');
+    const ingredientesDivs = document.getElementById('ingredientesContainer').querySelectorAll('div');
     
     const ingredientes = [];
     
     ingredientesDivs.forEach(div => {
         const select = div.querySelector('select');
         const inputGramos = div.querySelector('input[type="number"]');
-        
-        const ingredienteId = select.value;
-        const gramos = inputGramos.value;
-        
-        if (ingredienteId && gramos) {
+    
+        const idInventario = select.value;
+        const cantidad = parseInt(inputGramos.value);
+    
+        if (idInventario && cantidad) {
             ingredientes.push({
-                ingrediente: select.options[select.selectedIndex].text,
-                idIngrediente: ingredienteId,
-                gramos: parseInt(gramos)
+                idInventario: parseInt(idInventario),
+                cantidad: cantidad,
             });
         }
     });
     
-    // Validaciones
-    if (!nombreProducto) {
-        alert('Por favor, ingrese el nombre del producto');
-        return;
-    }
-    
+
     if (ingredientes.length === 0) {
-        alert('Debe agregar al menos un ingrediente');
+        showAlert('Debe agregar al menos un ingrediente', 'warning');
         return;
     }
-    
-    // Obtener los precios de los ingredientes (simulación de precios desde la base de datos)
-    let precioTotal = 0;
-    for (let i = 0; i < ingredientes.length; i++) {
-        try {
-            const ingredienteData = await sendRequest(`/inventario/${ingredientes[i].idIngrediente}`, 'GET');
-            const precioPorGramo = ingredienteData.precio;  // Suponiendo que tienes un campo `precio` en tu inventario
-            precioTotal += ingredientes[i].gramos * precioPorGramo;
-        } catch (error) {
-            console.error('Error al obtener el precio del ingrediente:', error);
-            alert('No se pudo obtener el precio de los ingredientes');
-            return;
-        }
-    }
-    
-    // Preparar datos para enviar
+
     const datosProducto = {
-        nombre: nombreProducto,
-        ingredientes: ingredientes,
-        precio: precioTotal
+        Nombre: nombreProducto, // Asegúrate de usar el campo correcto
+        PrecioTotal: PrecioU,   // Cambia 'PrecioU' a 'PrecioTotal'
+        ingredientes: ingredientes.map(ing => ({
+            idInventario: parseInt(ing.idInventario), // Asegúrate de que sea un número
+            cantidad: parseFloat(ing.cantidad),      // Asegúrate de que sea un número decimal
+        }))
     };
     
+    
     try {
-        const response = await fetch('/producto/agregar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(datosProducto)
-        });
+        const response = await sendRequest('/producto/agregar', 'POST', datosProducto);
         
-        const resultado = await response.json();
-        
-        if (resultado.success) {
-            alert('Producto guardado exitosamente');
-            // Limpiar formulario
+        if (response.success) {
+            showAlert('Producto guardado exitosamente', 'success');
             document.getElementById('addPanForm').reset();
-            // Eliminar campos de ingredientes extra
             const ingredientesContainer = document.getElementById('ingredientesContainer');
             while (ingredientesContainer.children.length > 1) {
                 ingredientesContainer.removeChild(ingredientesContainer.lastChild);
             }
         } else {
-            throw new Error(resultado.message || 'Error al guardar el producto');
+            throw new Error(response.message || 'Error al guardar el producto');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert(error.message);
+        showAlert(error.message, 'danger');
     }
 }
+
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {

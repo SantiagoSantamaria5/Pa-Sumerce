@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="../styles/styles.css">
     <title>Añadir nuevo registro</title>
 </head>
+
 <body>
     <!-- Barra superior -->
     <div class="layout-bar top-bar">
@@ -39,10 +41,11 @@
             <div class="sidebar-menu p-3 me-4">
                 <h2 class="menu-title text-center">MENÚ DE REGISTRO</h2>
                 <ul class="list-unstyled">
-                    <li><a href="registroNuevo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Registro nuevo</a></li>
+                    <li><a href="registroNuevo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span
+                                class="icon me-2">➕</span> Registro nuevo</a></li>
                 </ul>
             </div>
-            
+
             <!-- Área de Contenido Principal -->
             <div class="content-area text-center p-4">
                 <h1>Añadir Producto</h1>
@@ -50,22 +53,33 @@
                     <form id="addPanForm">
                         <div class="mb-3">
                             <label for="nombrePan" class="form-label"></label>
-                            <input type="text" class="form-control" id="nombrePan" placeholder="Nombre del pan" required>
+                            <input type="text" class="form-control" id="nombrePan" placeholder="Nombre del pan"
+                                required>
                         </div>
                         <div id="ingredientesContainer" class="mb-3">
                             <label class="form-label"></label>
                             <div class="d-flex align-items-center" id="ingredientInputs">
-                                <select class="form-select" id="SelectIngrediente" onchange="cargarIngrediente()">
+                                <select class="form-select" id="SelectIngrediente">
                                     <option value="">Seleccione el ingrediente</option>
                                 </select>
                                 <input type="number" class="form-control me-2" placeholder="Gramos" required>
-                                <button type="button" class="btn btn-danger btn-sm removeIngredientBtn" style="display: none;">❌</button>
+                                <button type="button" class="btn btn-danger btn-sm removeIngredientBtn"
+                                    style="display: none;">❌</button>
                             </div>
                         </div>
-                        <div class="d-flex flex-column align-items-center">
-                            <button type="button" class="btn btn-secondary mb-2" id="addIngredientBtn">Añadir Ingrediente</button>
-                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        <!-- Campo para Precio Unitario -->
+                        <div class="mb-3">
+                            <label for="precioUnitario" class="form-label">Precio por unidad</label>
+                            <input type="number" class="form-control" id="precioUnitario"
+                                placeholder="Precio por unidad" required>
                         </div>
+
+                        <div class="d-flex flex-column align-items-center">
+                            <button type="button" class="btn btn-secondary mb-3" id="addIngredientBtn">Añadir
+                                Ingrediente</button>
+                            <button type="submit" class="btn btn-primary mb-3">Guardar</button>
+                        </div>
+
                     </form>
                 </div>
             </div>
@@ -75,10 +89,12 @@
     <!-- Barra inferior -->
     <div class="layout-bar bottom-bar">
         <div class="mb-4 text-start">
-            <a href="../produccion/menuProduccion.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+            <a href="../produccion/menuProduccion.html" class="btn btn-secondary"><span class="icon me-2">❌</span>
+                Atrás</a>
         </div>
     </div>
 
-    <script src="../scritps/producto.js"></script>
+    <script src="../scritps/srcProducto.js"></script>
 </body>
+
 </html>
