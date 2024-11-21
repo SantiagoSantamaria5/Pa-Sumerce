@@ -45,7 +45,7 @@
             
             <!-- Área de Contenido Principal -->
             <div class="content-area text-center p-4">
-                <h1>Añadir Pan</h1>
+                <h1>Añadir Producto</h1>
                 <div class="container my-4">
                     <form id="addPanForm">
                         <div class="mb-3">
@@ -55,7 +55,9 @@
                         <div id="ingredientesContainer" class="mb-3">
                             <label class="form-label"></label>
                             <div class="d-flex align-items-center" id="ingredientInputs">
-                                <input type="text" class="form-control me-2" placeholder="Ingrediente" required>
+                                <select class="form-select" id="SelectIngrediente" onchange="cargarIngrediente()">
+                                    <option value="">Seleccione el ingrediente</option>
+                                </select>
                                 <input type="number" class="form-control me-2" placeholder="Gramos" required>
                                 <button type="button" class="btn btn-danger btn-sm removeIngredientBtn" style="display: none;">❌</button>
                             </div>
