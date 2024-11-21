@@ -27,7 +27,7 @@ router.post('/agregar', async (req, res) => {
 
         const productoId = productoResult.insertId; // Obtener el ID del producto recién creado
 
-        // 2. Insertar los ingredientes relacionados
+        // 2. Insertar los ingredientes relacionados y validar el inventario
         for (const ingrediente of ingredientes) {
             const { idInventario, cantidad } = ingrediente;
 
@@ -36,9 +36,31 @@ router.post('/agregar', async (req, res) => {
                 throw new Error('Ingrediente inválido: debe incluir idInventario y una cantidad válida.');
             }
 
+            // Consultar el inventario para verificar que haya suficiente cantidad
+            const [inventario] = await connection.query(
+                'SELECT cantidad FROM inventario WHERE Id = ?',
+                [idInventario]
+            );
+
+            if (!inventario || inventario.length === 0) {
+                throw new Error('Ingrediente no encontrado en el inventario.');
+            }
+
+            // Verificar si hay suficiente cantidad en el inventario
+            if (inventario[0].cantidad < cantidad) {
+                throw new Error(`No hay suficiente cantidad de ${ingrediente.nombre} en el inventario.`);
+            }
+
+            // Si hay suficiente cantidad, insertar el ingrediente
             await connection.query(
                 'INSERT INTO producto_ingrediente (idProducto, idInventario, cantidad) VALUES (?, ?, ?)',
                 [productoId, idInventario, cantidad]
+            );
+
+            // Restar la cantidad utilizada del inventario
+            await connection.query(
+                'UPDATE inventario SET cantidad = cantidad - ? WHERE Id = ?',
+                [cantidad, idInventario]
             );
         }
 
@@ -55,7 +77,5 @@ router.post('/agregar', async (req, res) => {
         connection.release();
     }
 });
-
-
 
 export default router;

@@ -11,6 +11,7 @@
 
 <body>
     <!-- Barra superior -->
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
     <div class="layout-bar top-bar">
         <div class="layout-bar">
             <span class="time-text">Hora</span>
@@ -61,7 +62,7 @@
                             <div class="d-flex align-items-center" id="ingredientInputs">
                                 <select class="form-select" id="SelectIngrediente">
                                     <option value="">Seleccione el ingrediente</option>
-                                </select>
+                                </select>                                
                                 <input type="number" class="form-control me-2" placeholder="Gramos" required>
                                 <button type="button" class="btn btn-danger btn-sm removeIngredientBtn"
                                     style="display: none;">❌</button>
@@ -77,7 +78,9 @@
                         <div class="d-flex flex-column align-items-center">
                             <button type="button" class="btn btn-secondary mb-3" id="addIngredientBtn">Añadir
                                 Ingrediente</button>
-                            <button type="submit" class="btn btn-primary mb-3">Guardar</button>
+                                <button type="button" class="btn btn-primary mb-3" id="saveButton">Guardar</button>
+
+
                         </div>
 
                     </form>

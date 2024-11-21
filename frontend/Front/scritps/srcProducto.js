@@ -82,15 +82,20 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
     }
 }
 
+// Función para cargar los ingredientes desde el servidor
 async function cargarIngredientes() {
     try {
         const response = await sendRequest('/inventario', 'GET');
         
-        // Asegurarnos de que la respuesta sea un array de ingredientes
+        // Asegurarse de que la respuesta sea un array de ingredientes
         if (!Array.isArray(response) || response.length === 0) {
             throw new Error('No se encontraron ingredientes');
         }
 
+        // Guardamos los ingredientes en la variable global
+        ingredientes = response;
+
+        // Actualizamos los selects en la página
         const selectIngredientes = document.querySelectorAll('#SelectIngrediente');
         
         selectIngredientes.forEach(select => {
@@ -112,15 +117,27 @@ async function cargarIngredientes() {
 
 // Función para agregar un nuevo campo de ingrediente
 function agregarCampoIngrediente() {
+    if (ingredientes.length === 0) {
+        showAlert('No se han cargado los ingredientes. Intenta nuevamente.', 'danger');
+        return;
+    }
+
     const contenedor = document.getElementById('ingredientesContainer');
-    
     const nuevoCampo = document.createElement('div');
     nuevoCampo.className = 'd-flex align-items-center mb-2';
     
-    // Select de ingredientes
+    // Crear un nuevo select para ingredientes
     const select = document.createElement('select');
     select.className = 'form-select me-2';
-    select.innerHTML = document.querySelector('#SelectIngrediente').innerHTML;
+    select.required = true; // Asegura que el campo es obligatorio
+
+    // Agregar las opciones al select con los ingredientes cargados
+    ingredientes.forEach(ingrediente => {
+        const option = document.createElement('option');
+        option.value = ingrediente.Id;
+        option.textContent = ingrediente.nombre;
+        select.appendChild(option);
+    });
     
     // Input de gramos
     const inputGramos = document.createElement('input');
@@ -145,22 +162,23 @@ function agregarCampoIngrediente() {
 
 // Función para guardar el producto
 async function guardarProducto(event) {
-    event.preventDefault();
-    
+    event.preventDefault(); // Evita el comportamiento por defecto
+
+    // Obtener los datos del formulario
     const nombreProducto = document.getElementById('nombrePan').value.trim();
     const PrecioU = parseFloat(document.getElementById('precioUnitario').value.trim());
-    
+
+    // Obtener los ingredientes
     const ingredientesDivs = document.getElementById('ingredientesContainer').querySelectorAll('div');
-    
     const ingredientes = [];
-    
+
     ingredientesDivs.forEach(div => {
         const select = div.querySelector('select');
         const inputGramos = div.querySelector('input[type="number"]');
-    
+
         const idInventario = select.value;
         const cantidad = parseInt(inputGramos.value);
-    
+
         if (idInventario && cantidad) {
             ingredientes.push({
                 idInventario: parseInt(idInventario),
@@ -168,32 +186,33 @@ async function guardarProducto(event) {
             });
         }
     });
-    
 
+    // Validación
     if (ingredientes.length === 0) {
         showAlert('Debe agregar al menos un ingrediente', 'warning');
         return;
     }
 
+    // Preparar los datos para enviar al servidor
     const datosProducto = {
-        Nombre: nombreProducto, // Asegúrate de usar el campo correcto
-        PrecioTotal: PrecioU,   // Cambia 'PrecioU' a 'PrecioTotal'
+        Nombre: nombreProducto,
+        PrecioTotal: PrecioU,
         ingredientes: ingredientes.map(ing => ({
-            idInventario: parseInt(ing.idInventario), // Asegúrate de que sea un número
-            cantidad: parseFloat(ing.cantidad),      // Asegúrate de que sea un número decimal
+            idInventario: parseInt(ing.idInventario),
+            cantidad: parseFloat(ing.cantidad),
         }))
     };
-    
-    
+
+    // Enviar los datos al servidor
     try {
         const response = await sendRequest('/producto/agregar', 'POST', datosProducto);
         
         if (response.success) {
             showAlert('Producto guardado exitosamente', 'success');
-            document.getElementById('addPanForm').reset();
+            document.getElementById('addPanForm').reset(); // Restablecer el formulario
             const ingredientesContainer = document.getElementById('ingredientesContainer');
             while (ingredientesContainer.children.length > 1) {
-                ingredientesContainer.removeChild(ingredientesContainer.lastChild);
+                ingredientesContainer.removeChild(ingredientesContainer.lastChild); // Limpiar ingredientes
             }
         } else {
             throw new Error(response.message || 'Error al guardar el producto');
@@ -203,6 +222,8 @@ async function guardarProducto(event) {
         showAlert(error.message, 'danger');
     }
 }
+
+
 
 
 // Event Listeners
@@ -216,5 +237,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Formulario de guardado
     const formProducto = document.getElementById('addPanForm');
-    formProducto.addEventListener('submit', guardarProducto);
+    formProducto.addEventListener('submit', guardarProducto);  // Esta es la única asignación necesaria
+});
+
+// Añadir evento al botón Guardar
+document.getElementById('saveButton').addEventListener('click', async (event) => {
+    event.preventDefault(); // Evitar el comportamiento por defecto del formulario
+    await guardarProducto(event); // Llamar la función para guardar el producto
 });
