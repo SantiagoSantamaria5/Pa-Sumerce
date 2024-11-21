@@ -40,7 +40,7 @@
                 <h2 class="menu-title text-center">MENÚ DE REGISTRO</h2>
                 <ul class="list-unstyled">
                     <li><a href="registroNuevo.html" class="menu-item d-flex align-items-center p-2 mb-2"><span class="icon me-2">➕</span> Registro nuevo</a></li>
-                    </ul>
+                </ul>
             </div>
             
             <!-- Área de Contenido Principal -->
@@ -85,7 +85,7 @@
     
             const nombrePan = document.getElementById('nombrePan').value;
             const ingredientes = [];
-            const ingredientInputs = document.querySelectorAll('#ingredientInputs input[type="text"], #ingredientInputs input[type="number"]');
+            const ingredientInputs = document.querySelectorAll('#ingredientInputs select, #ingredientInputs input[type="number"]');
     
             for (let i = 0; i < ingredientInputs.length; i += 2) {
                 const ingrediente = ingredientInputs[i].value;
@@ -125,7 +125,9 @@
                 document.getElementById('ingredientesContainer').innerHTML = `
                     <label class="form-label">Ingredientes (gramos)</label>
                     <div class="d-flex align-items-center" id="ingredientInputs">
-                        <input type="text" class="form-control me-2" placeholder="Ingrediente" required>
+                        <select class="form-select" id="SelectIngrediente" onchange="cargarIngrediente()">
+                            <option value="">Seleccione el ingrediente</option>
+                        </select>
                         <input type="number" class="form-control me-2" placeholder="Gramos" required>
                         <button type="button" class="btn btn-danger btn-sm removeIngredientBtn" style="display: none;">❌</button>
                     </div>
@@ -134,12 +136,16 @@
                 alert('Error: ' + error.message);
             }
         });
+
         document.getElementById('addIngredientBtn').addEventListener('click', () => {
-            const newIngredientInput = document.createElement('input');
-            newIngredientInput.type = 'text';
-            newIngredientInput.className = 'form-control me-2';
-            newIngredientInput.placeholder = 'Ingrediente';
-            newIngredientInput.required = true;
+            const newIngredientSelect = document.createElement('select');
+            newIngredientSelect.className = 'form-select me-2';
+            newIngredientSelect.innerHTML = `
+                <option value="">Seleccione el ingrediente</option>
+                <option value="Ingrediente1">Ingrediente 1</option>
+                <option value="Ingrediente2">Ingrediente 2</option>
+                <option value="Ingrediente3">Ingrediente 3</option>
+            `;
 
             const newGramsInput = document.createElement('input');
             newGramsInput.type = 'number';
@@ -151,11 +157,10 @@
             removeBtn.type = 'button';
             removeBtn.className = 'btn btn-danger btn-sm removeIngredientBtn';
             removeBtn.textContent = '❌';
-            removeBtn.style.backgroundColor = 'yourColor'; // Cambia 'yourColor' por el color que desees
 
             const ingredientContainer = document.createElement('div');
             ingredientContainer.className = 'd-flex align-items-center my-2';
-            ingredientContainer.appendChild(newIngredientInput);
+            ingredientContainer.appendChild(newIngredientSelect);
             ingredientContainer.appendChild(newGramsInput);
             ingredientContainer.appendChild(removeBtn);
 
