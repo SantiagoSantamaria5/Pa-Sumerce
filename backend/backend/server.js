@@ -3,6 +3,7 @@ import cors from 'cors';
 import proveedorRoutes from './routes/proveedor.js';
 import inventarioRoutes from './routes/inventario.js';
 import authRoutes from './routes/auth.js';
+import productoRoutes from './routes/producto.js';
 import db from './config/db.js';
 
 const app = express();
@@ -40,6 +41,7 @@ db.connect((err) => {
 // Rutas
 app.use('/api/proveedor', proveedorRoutes);
 app.use('/api/inventario', inventarioRoutes);
+app.use('/api/producto', productoRoutes);
 app.use('/api', authRoutes);
 
 const PORT = 5000;

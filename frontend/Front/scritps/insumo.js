@@ -63,7 +63,23 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         const contentType = response.headers.get('content-type');
         
-         } catch (error) {
+        // Añadir console.log para ver los headers
+        console.log('Content-Type:', contentType);
+
+        const data = contentType && contentType.includes('application/json')
+            ? await response.json()
+            : await response.text();
+
+        // Añadir console.log para ver los datos raw
+        console.log('Datos recibidos:', data);
+
+        if (!response.ok) {
+            const message = typeof data === 'object' ? data.message : data;
+            throw new NetworkError(message || 'Error en la solicitud', response.status);
+        }
+
+        return data;
+    } catch (error) {
         console.error('Error completo:', error);
         if (error instanceof NetworkError) {
             throw error;
@@ -203,16 +219,45 @@ async function actualizarInsumo(event) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    cargarInsumos();
-    cargarProveedor();
+    // Verifica en qué página estás
+    const deleteInsumoSelect = document.getElementById('insumoSelect');
     
-    const form = document.getElementById('modifyInsumoForm');
-    if (form) {
-        form.addEventListener('submit', actualizarInsumo);
-    }
+    if (deleteInsumoSelect) {
+        // Si estás en la página de eliminar insumos
+        cargarInsumos();
+    } else {
+        // Lógica para otras páginas
+        cargarInsumos();
+        cargarProveedor();
+        
+        const form = document.getElementById('modifyInsumoForm');
+        if (form) {
+            form.addEventListener('submit', actualizarInsumo);
+        }
 
-    const select = document.getElementById('insumoSelect');
-    if (select) {
-        select.addEventListener('change', cargarInsumo);
+        const select = document.getElementById('insumoSelect');
+        if (select) {
+            select.addEventListener('change', cargarInsumo);
+        }
     }
 });
+
+// Añade una nueva función para eliminar insumo
+async function eliminarInsumo() {
+    const insumoId = document.getElementById('insumoSelect').value;
+
+    if (!insumoId) {
+        showAlert('Por favor, seleccione un insumo para eliminar.', 'danger');
+        return;
+    }
+
+    try {
+        const response = await sendRequest(`/inventario/eliminar/${insumoId}`, 'DELETE');
+        
+        showAlert('Insumo eliminado exitosamente', 'success');
+        await cargarInsumos(); // Recargar la lista de insumos
+    } catch (error) {
+        showAlert(error.message, 'danger');
+        console.error('Error al eliminar el insumo:', error);
+    }
+}
