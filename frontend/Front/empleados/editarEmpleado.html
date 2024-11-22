@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Editar Empleado</title>
+</head>
+<body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+    
+    <!-- Barra superior -->
+    <div class="layout-bar top-bar">
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+        </script>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="layout-container d-flex align-items-start">
+        <!-- Menú Lateral -->
+        <div class="sidebar-menu p-3 me-4">
+            <h2 class="menu-title text-center">Empleados</h2>
+            <ul class="list-unstyled" id="empleadosList">
+                <li class="list-group-item d-flex justify-content-between align-items-center" onclick="cargarEmpleado(1)">
+                    Juan Pérez
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center" onclick="cargarEmpleado(2)">
+                    María Gómez
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center" onclick="cargarEmpleado(3)">
+                    Carlos López
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center" onclick="cargarEmpleado(4)">
+                    Ana Torres
+                </li>
+            </ul>
+        </div>
+
+        <!-- Área de Contenido Principal -->
+        <div class="layout-content d-flex flex-column align-items-center">
+            <div class="content-area text-center p-4">
+                <h1>Editar Empleado</h1>
+                <div class="container my-4">
+                    <form id="editEmpleadoForm">
+                        <input type="hidden" id="empleadoId"> <!-- Campo oculto para almacenar el ID del empleado -->
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label"></label>
+                            <input type="text" class="form-control" id="nombre" placeholder="Nombre del empleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label"></label>
+                            <input type="text" class="form-control" id="apellido" placeholder="Apellido del empleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numero" class="form-label"></label>
+                            <input type="tel" class="form-control" id="numero" placeholder="Ejemplo: +57 321 456 9873" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cedula" class="form-label"></label>
+                            <input type="text" class="form-control" id="cedula" placeholder="Número de cédula" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fechaNacimiento" class="form-label"></label>
+                            <input type="date" class="form-control" id="fechaNacimiento" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Actualizar</button>
+                        <button type="button" class="btn btn-secondary w-100 mt-2" onclick="cancelar()">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra inferior -->
+    <div class="layout-bar bottom-bar">
+        <div ```html
+        class="mb-4 text-start">
+            <a href="../empleados/menuEmpleados.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+        </div>
+    </div>
+
+    <script src="../scripts/empleado.js"></script>
+    <script>
+        // Función para cargar los datos del empleado seleccionado
+        function cargarEmpleado(id) {
+            // Simulación de datos de empleados
+            const empleados = [
+                { id: 1, nombre: 'Juan', apellido: 'Pérez', numero: '+57 321 456 9873', cedula: '123456789', fechaNacimiento: '1990-01-01' },
+                { id: 2, nombre: 'María', apellido: 'Gómez', numero: '+57 321 456 9874', cedula: '987654321', fechaNacimiento: '1992-02-02' },
+                { id: 3, nombre: 'Carlos', apellido: 'López', numero: '+57 321 456 9875', cedula: '456789123', fechaNacimiento: '1995-03-03' },
+                { id: 4, nombre: 'Ana', apellido: 'Torres', numero: '+57 321 456 9876', cedula: '321654987', fechaNacimiento: '1988-04-04' }
+            ];
+
+            const empleado = empleados.find(emp => emp.id === id);
+            if (empleado) {
+                document.getElementById('empleadoId').value = empleado.id;
+                document.getElementById('nombre').value = empleado.nombre;
+                document.getElementById('apellido').value = empleado.apellido;
+                document.getElementById('numero').value = empleado.numero;
+                document.getElementById('cedula').value = empleado.cedula;
+                document.getElementById('fechaNacimiento').value = empleado.fechaNacimiento;
+            }
+        }
+
+        // Función para cancelar la edición
+        function cancelar() {
+            document.getElementById('editEmpleadoForm').reset();
+        }
+
+        // Manejo del envío del formulario
+        document.getElementById('editEmpleadoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // Aquí puedes agregar la lógica para enviar los datos actualizados a la API
+            alert('Empleado actualizado satisfactoriamente.');
+            cancelar(); // Reiniciar el formulario
+        });
+    </script>
+</body>
+</html>
