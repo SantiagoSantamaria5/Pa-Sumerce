@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Añadir Empleado</title>
+</head>
+<body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+    
+    <!-- Barra superior -->
+    <div class="layout-bar top-bar">
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+        </script>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="layout-container d-flex align-items-center justify-content-center">
+        <div class="layout-content d-flex">
+            <div class="content-area text-center p-4">
+                <h1>Añadir Empleado</h1>
+                <div class="container my-4">
+                    <form id="addEmpleadoForm">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label"></label>
+                            <input type="text" class="form-control" id="nombre" placeholder="Nombre del empleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label"></label>
+                            <input type="text" class="form-control" id="apellido" placeholder="Apellido del empleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numero" class="form-label"></label>
+                            <input type="tel" class="form-control" id="numero" placeholder="Ejemplo: +57 321 456 9873" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cedula" class="form-label"></label>
+                            <input type="text" class="form-control" id="cedula" placeholder="Número de cédula" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fechaNacimiento" class="form-label"></label>
+                            <input type="date" class="form-control" id="fechaNacimiento" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Guardar</button>
+                        <button type="button" class="btn btn-secondary w-100 mt-2" onclick="cancelar()">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra inferior -->
+    <div class="layout-bar bottom-bar">
+        <div class="mb-4 text-start">
+            <a href="../empleados/menuEmpleados.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+        </div>
+    </div>
+
+    <script src="../scritps/empleado.js"></script>
+    <script>
+        function cancelar() {
+            if (confirm('¿Estás seguro de que deseas cancelar?')) {
+                window.location.href = '../empleados/menuEmpleados.html'; // Redirige a la página de menú de empleados
+            }
+        }
+
+        document.getElementById('addEmpleadoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                nombre: document.getElementById('nombre').value.trim(),
+                apellido: document.getElementById('apellido').value.trim(),
+                numero: document.getElementById('numero').value.trim(),
+                cedula: document.getElementById('cedula').value.trim(),
+                fechaNacimiento: document.getElementById('fechaNacimiento').value,
+            };
+
+            try {
+                // Aquí puedes agregar el código para enviar los datos a la base de datos
+                const response = await fetch('/api/empleados', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                if (response.ok) {
+                    alert('Empleado añadido exitosamente');
+                    window.location.href = '../empleados/menuEmpleados.html'; // Redirige a la página de menú de empleados
+                } else {
+                    alert('Error al añadir el empleado. Intenta de nuevo.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocurrió un error. Por favor, intenta más tarde.');
+            }
+        });
+    </script>
+</body>
+</html>

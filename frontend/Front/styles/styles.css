@@ -263,3 +263,73 @@ h3 {
   .btn-secondary{
     transform: translateY(15px);
   }
+  /* Estilos específicos para la lista de empleados en editarEmpleado.html */
+#empleadosList {
+    list-style-type: none; /* Quitar los puntos de la lista */
+    padding: 0; /* Quitar el padding por defecto */
+}
+
+#empleadosList .list-group-item {
+    background-color: #f8f9fa; /* Color de fondo claro */
+    border: 1px solid #ddd; /* Borde delgado */
+    border-radius: 5px; /* Bordes redondeados */
+    margin-bottom: 10px; /* Espacio entre los elementos */
+    padding: 10px 15px; /* Espaciado interno */
+    display: flex; /* Usar flexbox para alinear el contenido */
+    justify-content: space-between; /* Espacio entre el texto y el botón */
+    align-items: center; /* Centrar verticalmente */
+    transition: background-color 0.3s; /* Transición suave para el hover */
+}
+
+#empleadosList .list-group-item:hover {
+    background-color: #e2e6ea; /* Color de fondo al pasar el ratón */
+}
+
+#empleadosList .btn-danger {
+    background-color: #dc3545; /* Color de fondo del botón de eliminar */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    padding: 5px 10px; /* Espaciado interno del botón */
+    color: white; /* Color del texto */
+    cursor: pointer; /* Cambiar el cursor al pasar el ratón */
+    transition: background-color 0.3s; /* Transición suave para el hover */
+}
+
+#empleadosList .btn-danger:hover {
+    background-color: #c82333; /* Color de fondo al pasar el ratón */
+}
+
+#empleadosList {
+    list-style-type: none; /* Quitar los puntos de la lista */
+    padding: 0; /* Quitar el padding por defecto */
+}
+
+#empleadosList .list-group-item {
+    background-color: #ffffff; /* Color de fondo blanco */
+    border: 1px solid #ced4da; /* Borde delgado */
+    border-radius: 5px; /* Bordes redondeados */
+    margin-bottom: 10px; /* Espacio entre los elementos */
+    padding: 10px 15px; /* Espaciado interno */
+    display: flex; /* Usar flexbox para alinear el contenido */
+    justify-content: space-between; /* Espacio entre el texto y el botón */
+    align-items: center; /* Centrar verticalmente */
+    transition: box-shadow 0.3s; /* Transición suave para el hover */
+}
+
+#empleadosList .list-group-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra al pasar el ratón */
+}
+
+#empleadosList .btn-danger {
+    background-color: #dc3545; /* Color de fondo del botón de eliminar */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    padding: 5px 10px; /* Espaciado interno del botón */
+    color: white; /* Color del texto */
+    cursor: pointer; /* Cambiar el cursor al pasar el ratón */
+    transition: background-color 0.3s; /* Transición suave para el hover */
+}
+
+#empleadosList .btn-danger:hover {
+    background-color: #c82333; /* Color de fondo al pasar el ratón */
+}

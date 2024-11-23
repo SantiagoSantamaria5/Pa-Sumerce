@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Eliminar Empleado</title>
+</head>
+<body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+    
+    <!-- Barra superior -->
+    <div class="layout-bar top-bar">
+        <div class="layout-bar">
+            <span class="time-text">Hora</span>
+            <div class="time-display" id="current-time">00:00:00</div>
+        </div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+        </script>
+    </div>
+
+    <!-- Contenedor Principal -->
+<div class="layout-container d-flex align-items-start">
+    <!-- Área de Contenido Principal -->
+    <div class="layout-content d-flex flex-column align-items-center">
+        <div class="content-area text-center p-4">
+            <h1>Eliminar Empleado</h1>
+            <div class="container my-4">
+                <h2>Lista de Empleados</h2>
+                <ul class="list-group" id="empleadosList">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Juan Pérez
+                        <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion(1)">Eliminar</button>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        María Gómez
+                        <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion(2)">Eliminar</button>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Carlos López
+                        <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion(3)">Eliminar</button>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Ana Torres
+                        <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion(4)">Eliminar</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Barra inferior -->
+    <div class="layout-bar bottom-bar">
+        <div class="mb-4 text-start">
+            <a href="../empleados/menuEmpleados.html" class="btn btn-secondary"><span class="icon me-2">❌</span> Atrás</a>
+        </div>
+    </div>
+
+    <script src="../scripts/empleado.js"></script>
+    <script>
+        // Función para confirmar la eliminación
+        function confirmarEliminacion(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este empleado?')) {
+                eliminarEmpleado(id);
+            }
+        }
+
+        // Función para eliminar un empleado (simulación)
+        function eliminarEmpleado(id) {
+            // Aquí puedes agregar la lógica para eliminar el empleado de la API
+            alert(`Empleado con ID ${id} eliminado satisfactoriamente.`);
+            // Lógica para actualizar la lista de empleados después de la eliminación
+        }
+    </script>
+</body>
+</html>
