@@ -227,69 +227,110 @@ async function cargarProveedor() {
         console.error(error);
     }
 }
+
+
+// Modifica la función actualizarInsumo para incluir más logs
 async function actualizarInsumo(event) {
     event.preventDefault();
+    
+    // Obtener valores del formulario
     const insumoId = document.getElementById('insumoSelect').value;
     const nombre = document.getElementById('nombre').value;
     const cantidad = document.getElementById('cantidad').value;
-    const IdProveedor = document.getElementById('proveedorSelect').value;
+    const idProveedor = document.getElementById('proveedorSelect').value;
     const fechaAdquisicion = document.getElementById('fechaAdquisicion').value;
     const fechaVencimiento = document.getElementById('fechaVencimiento').value;
     const valorUnitario = document.getElementById('valorUnitario').value;
 
-    if (!insumoId || !cantidad || !IdProveedor || !fechaAdquisicion || !fechaVencimiento || !valorUnitario) {
+    // Log para debug
+    console.log('Datos a enviar:', {
+        insumoId,
+        nombre,
+        cantidad,
+        idProveedor,
+        fechaAdquisicion,
+        fechaVencimiento,
+        valorUnitario
+    });
+
+    // Validación
+    if (!insumoId || !nombre || !cantidad || !idProveedor || !fechaAdquisicion || !fechaVencimiento || !valorUnitario) {
         showAlert('Por favor, complete todos los campos.', 'danger');
         return;
     }
 
     const updatedInsumo = {
-        nombre: nombre,
-        cantidad: cantidad,
-        idProveedor: IdProveedor,
-        fechaAdquisicion: fechaAdquisicion,
-        fechaVencimiento: fechaVencimiento,
-        valorUnitario: valorUnitario
+        nombre,
+        cantidad: parseFloat(cantidad),
+        idProveedor: parseInt(idProveedor),
+        fechaAdquisicion,
+        fechaVencimiento,
+        valorUnitario: parseFloat(valorUnitario)
     };
 
     try {
         const response = await sendRequest(`/inventario/actualizar/${insumoId}`, 'PUT', updatedInsumo);
-        
-      
+        console.log('Respuesta del servidor:', response); // Para debug
         
         if (response && response.success) {
             showAlert('Insumo actualizado exitosamente', 'success');
-            await cargarInsumos(); // Recargar la lista de insumos
+            
+            // Recargar la lista de insumos
+            await cargarInsumos(); 
+            
+            // Reiniciar el formulario
+            const form = document.getElementById('modifyInsumoForm');
+            if (form) {
+                form.reset();
+            }
+            
+            // Reiniciar el select de insumos a la opción por defecto
+            const insumoSelect = document.getElementById('insumoSelect');
+            if (insumoSelect) {
+                insumoSelect.value = '';
+            }
+            
+            // Reiniciar el select de proveedores a la opción por defecto
+            const proveedorSelect = document.getElementById('proveedorSelect');
+            if (proveedorSelect) {
+                proveedorSelect.value = '';
+            }
+            
         } else {
             showAlert(response.message || 'Error al actualizar el insumo', 'danger');
         }
     } catch (error) {
-        showAlert(error.message, 'danger');
-        console.error('Error al actualizar el insumo:', error);
+        console.error('Error en la actualización:', error);
+        showAlert(error.message || 'Error al actualizar el insumo', 'danger');
     }
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Verifica en qué página estás
-    const deleteInsumoSelect = document.getElementById('insumoSelect');
+    // Cargar datos iniciales
+    cargarInsumos();
+    cargarProveedor();
     
-    if (deleteInsumoSelect) {
-        // Si estás en la página de eliminar insumos
-        cargarInsumos();
-    } else {
-        // Lógica para otras páginas
-        cargarInsumos();
-        cargarProveedor();
-        
-        const form = document.getElementById('modifyInsumoForm');
-        if (form) {
-            form.addEventListener('submit', actualizarInsumo);
-        }
+    // Configurar el formulario de modificación
+    const form = document.getElementById('modifyInsumoForm');
+    if (form) {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            console.log('Formulario enviado'); // Para debug
+            
+            try {
+                await actualizarInsumo(event);
+            } catch (error) {
+                console.error('Error al actualizar:', error);
+                showAlert('Error al actualizar el insumo', 'danger');
+            }
+        });
+    }
 
-        const select = document.getElementById('insumoSelect');
-        if (select) {
-            select.addEventListener('change', cargarInsumo);
-        }
+    // Configurar el select de insumos
+    const select = document.getElementById('insumoSelect');
+    if (select) {
+        select.addEventListener('change', cargarInsumo);
     }
 });
 

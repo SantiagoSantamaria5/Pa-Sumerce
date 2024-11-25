@@ -8,6 +8,7 @@
     <title>Informe de Inventario</title>
 </head>
 <body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
     <div class="layout-bar top-bar">
         <span class="time-text">Hora</span>
         <div class="time-display" id="current-time">00:00:00</div>
@@ -55,36 +56,13 @@
         </div>
     </div>
 
-    <script src="../main.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        async function cargarInsumos() {
-            const response = await fetch('http://localhost:5000/api/inventario');
-            const insumos = await response.json();
-            const tableBody = document.getElementById('inventarioTableBody');
+    
+   <!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 
-            insumos.forEach(insumo => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${insumo.nombre}</td>
-                    <td>${insumo.cantidad}</td>
-                    <td>${insumo.fechaAdquisicion}</td>
-                    <td>${insumo.fechaVencimiento}</td>
-                    <td>$${insumo.valorUnitario}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+<!-- Plugin autoTable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
-        document.getElementById('generatePDF').addEventListener('click', () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text('Informe de Inventario', 20, 10);
-            doc.autoTable({ html: '#inventarioTable' });
-            doc.save('informe_inventario.pdf');
-        });
-
-        window.onload = cargarInsumos;
-    </script>
+    <script src="../scritps/informes.js"></script>
 </body>
 </html>

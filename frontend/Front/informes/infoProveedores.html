@@ -8,6 +8,7 @@
     <title>Informe de Proveedores</title>
 </head>
 <body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
     <div class="layout-bar top-bar">
         <span class="time-text">Hora</span>
         <div class="time-display" id="current-time">00:00:00</div>
@@ -33,9 +34,9 @@
                         <thead>
                             <tr>
                                 <th>Nombre del Proveedor</th>
-                                <th>Contacto</th>
-                                <th>Dirección</th>
+                                <th>Empresa</th>
                                 <th>Teléfono</th>
+                                <th>Horario</th>
                             </tr>
                         </thead>
                         <tbody id="proveedoresTableBody">
@@ -54,35 +55,10 @@
         </div>
     </div>
 
-    <script src="../main.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        async function cargarProveedores() {
-            const response = await fetch('http://localhost:5000/api/proveedores');
-            const proveedores = await response.json();
-            const tableBody = document.getElementById('proveedoresTableBody');
-
-            proveedores.forEach(proveedor => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${proveedor.nombre}</td>
-                    <td>${proveedor.contacto}</td>
-                    <td>${proveedor.direccion}</td>
-                    <td>${proveedor.telefono}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        document.getElementById('generatePDF').addEventListener('click', () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text('Informe de Proveedores', 20, 10);
-            doc.autoTable({ html: '#proveedoresTable' });
-            doc.save('informe_proveedores.pdf');
-        });
-
-        window.onload = cargarProveedores;
-    </script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Plugin autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="../scritps/informeP.js"></script>
 </body>
 </html>

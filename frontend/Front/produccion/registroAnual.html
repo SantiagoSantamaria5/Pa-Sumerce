@@ -8,6 +8,7 @@
     <title>Registros Anuales</title>
 </head>
 <body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
     <div class="layout-bar top-bar">
         <span class="time-text">Hora</span>
         <div class="time-display" id="current-time">00:00:00</div>
@@ -36,10 +37,9 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Año</th>
-                                <th>Nombre del Pan</th>
-                                <th>Ingredientes</th>
-                                <th>Acciones</th>
+                                <th>fecha</th>
+                                <th>Nombre del producto</th>
+                                <th>cantidad</th>
                             </tr>
                         </thead>
                         <tbody id="registrosAnualesTableBody">
@@ -58,33 +58,7 @@
                 </div>
             </ul>
         </div>
-    <script>
-        // Simulación de datos de registros anuales
-        const registrosAnuales = [
-            { año: '2023', nombre: 'Pan de Ajo', ingredientes: 'Harina, Ajo, Agua' },
-            { año: '2022', nombre: 'Pan de Chocolate', ingredientes: 'Harina, Chocolate, Azúcar' }
-            // Agrega más registros según sea necesario
-        ];
-
-        function cargarRegistrosAnuales() {
-            const tableBody = document.getElementById('registrosAnualesTableBody');
-            tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
-
-            registrosAnuales.forEach(registro => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${registro.año}</td>
-                    <td>${registro.nombre}</td>
-                    <td>${registro.ingredientes}</td>
-                    <td>
-                        <button class="btn btn-info btn-sm">Ver Detalles</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        window.onload = cargarRegistrosAnuales;
+    <script src="../scritps/registros.js">
     </script>
 </body>
 </html>

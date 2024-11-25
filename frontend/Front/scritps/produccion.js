@@ -119,7 +119,7 @@ document.getElementById('registroNuevoForm').addEventListener('submit', async (e
         const response = await sendRequest('/produccion/guardar', 'POST', { idProducto, cantidad });
 
         if (response.success) {
-            showAlert(`Producción registrada: ${response.valorTotal}`, 'success');
+            showAlert(`Registro registrada`, 'success');
             document.getElementById('registroNuevoForm').reset();
         } else {
             throw new Error(response.message);

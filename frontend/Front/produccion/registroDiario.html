@@ -8,6 +8,7 @@
     <title>Registros Diarios</title>
 </head>
 <body>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
     <div class="layout-bar top-bar">
         <span class="time-text">Hora</span>
         <div class="time-display" id="current-time">00:00:00</div>
@@ -39,10 +40,10 @@
                         <thead>
                             <tr>
                                 <th>Fecha</th>
-                                <th>Nombre del Pan</th>
-                                <th>Ingredientes</th>
+                                <th>Nombre del Producto</th>
+                                <th>Cantidad Producida</th>
                             </tr>
-                        </thead>
+                        </thead>                        
                         <tbody id="registrosDiariosTableBody">
                             <!-- Aquí se llenarán los datos de los registros diarios -->
                         </tbody>

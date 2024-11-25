@@ -1,5 +1,5 @@
 const API_BASE_URL = 'http://localhost:5000/api';
-let ingredientes = []; // Variable global para almacenar los insumos
+let ingredientes = [];
 
 // Utilidad para manejar errores de red
 class NetworkError extends Error {
@@ -32,9 +32,9 @@ function showAlert(message, type = 'info', duration = 5000) {
         }
     }
 }
+
 // Función para realizar solicitudes al servidor
 async function sendRequest(endpoint, method = 'GET', body = null) {
-    
     const options = {
         method,
         headers: {
@@ -52,22 +52,19 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         const contentType = response.headers.get('content-type');
         
-        // Verificar si la respuesta fue exitosa
         if (!response.ok) {
             throw new NetworkError('Error al procesar la solicitud', response.status);
         }
 
-        const responseText = await response.text();  // Leer la respuesta como texto primero
-        console.log("Respuesta del servidor:", responseText);  // Agregar log
+        const responseText = await response.text();
+        console.log("Respuesta del servidor:", responseText);
 
-        // Comprobar si la respuesta está vacía
         if (responseText.trim() === "") {
             throw new Error('Respuesta vacía del servidor');
         }
 
-        // Verificar si el contenido es JSON
         if (contentType && contentType.includes('application/json')) {
-            return JSON.parse(responseText);  // Parsear el JSON si es válido
+            return JSON.parse(responseText);
         } else {
             throw new Error('La respuesta no es JSON');
         }
@@ -83,55 +80,117 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
 function getCurrentDate() {
     const now = new Date();
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Los meses van de 0 a 11
+    const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
+function formatearFecha(fecha) {
+    return new Date(fecha).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+    });
+}
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const fechaActual = getCurrentDate(); // Obtén la fecha actual
+// Función para obtener registros por fecha específica
+async function getRegistrosPorFecha(fecha) {
     try {
-        const response = await sendRequest(`/registro/registros/${fechaActual}`);
-        if (response.success) {
-            populateTable(response.registros); // Llena la tabla con los datos obtenidos
-        } else {
-            showAlert(response.message, 'warning');
+        const data = await sendRequest(`/registro/registros/${fecha}`, 'GET');
+        const tableBody = document.getElementById('registrosDiariosTableBody');
+        tableBody.innerHTML = '';
+
+        if (!data.success || !data.registros || data.registros.length === 0) {
+            showAlert('No hay registros disponibles para esta fecha.', 'warning');
+            return;
         }
+
+        data.registros.forEach(registro => {
+            const fechaFormateada = formatearFecha(registro.fecha);
+            const cantidad = registro.Cantidad || 0;
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${fechaFormateada}</td>
+                <td>${registro.nombreProducto}</td>
+                <td>${cantidad.toLocaleString('es-ES')}</td>
+            `;
+            tableBody.appendChild(row);
+        });
     } catch (error) {
-        console.error('Error al obtener registros:', error);
-        showAlert('Error al cargar los registros diarios.', 'danger');
+        console.error('Error al obtener los registros:', error);
+        showAlert('No se pudieron obtener los registros de producción.', 'danger');
+    }
+}
+
+// Función para obtener registros mensuales
+async function getRegistrosMensuales() {
+    try {
+        const data = await sendRequest('/registro/registros/mes', 'GET');
+        const tableBody = document.getElementById('registrosMensualesTableBody');
+        tableBody.innerHTML = '';
+
+        if (!data.success || !data.registros || data.registros.length === 0) {
+            showAlert('No hay registros mensuales disponibles.', 'warning');
+            return;
+        }
+
+        data.registros.forEach(registro => {
+            const fechaFormateada = formatearFecha(registro.fecha);
+            const cantidad = registro.cantidadTotal || 0;
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${fechaFormateada}</td>
+                <td>${registro.nombreProducto}</td>
+                <td>${cantidad.toLocaleString('es-ES')}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error al obtener los registros mensuales:', error);
+        showAlert('No se pudieron obtener los registros mensuales.', 'danger');
+    }
+}
+
+// Función actualizada para obtener registros anuales
+async function getRegistrosAnuales() {
+    try {
+        const data = await sendRequest('/registro/registros/anual', 'GET');
+        const tableBody = document.getElementById('registrosAnualesTableBody');
+        tableBody.innerHTML = '';
+
+        if (!data.success || !data.registros || data.registros.length === 0) {
+            showAlert('No hay registros anuales disponibles.', 'warning');
+            return;
+        }
+
+        data.registros.forEach(registro => {
+            const row = document.createElement('tr');
+            const fechaFormateada = formatearFecha(new Date()); // Fecha actual para el registro anual
+            
+            row.innerHTML = `
+                <td>${fechaFormateada}</td>
+                <td>${registro.nombreProducto}</td>
+                <td>${registro.cantidadTotal.toLocaleString('es-ES')}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error al obtener los registros anuales:', error);
+        showAlert('No se pudieron obtener los registros anuales.', 'danger');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const url = window.location.href;
+    const fechaActual = getCurrentDate();
+
+    if (url.includes('registroMensual.html')) {
+        getRegistrosMensuales();
+    } else if (url.includes('registroAnual.html')) {
+        getRegistrosAnuales();
+    } else {
+        getRegistrosPorFecha(fechaActual);
     }
 });
-
-// Función para llenar la tabla con los datos obtenidos
-function populateTable(registros) {
-    const tableBody = document.getElementById('registrosDiariosTableBody');
-    tableBody.innerHTML = ''; // Limpia la tabla antes de llenarla
-
-    registros.forEach((registro) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${registro.fecha}</td>
-            <td>${registro.nombreProducto}</td>
-            <td>${registro.cantidad}</td>
-        `;
-        tableBody.appendChild(row);
-    });
-
-    // Agregar botón de detalles al final
-    const detallesRow = document.createElement('tr');
-    detallesRow.innerHTML = `
-        <td colspan="3" class="text-center">
-            <button class="btn btn-primary" onclick="generatePDF('${getCurrentDate()}')">Ver Detalles</button>
-        </td>
-    `;
-    tableBody.appendChild(detallesRow);
-}
-
-// Función para generar un PDF (simulada aquí)
-function generatePDF(fecha) {
-    window.open(`/api/registro/pdf/${fecha}`, '_blank');
-}
-
-
