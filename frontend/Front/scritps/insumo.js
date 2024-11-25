@@ -100,10 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarInsumos();
     cargarProveedor();
 
-    // Lógica del formulario de agregar insumo
-    document.getElementById('addInsumoForm').addEventListener('submit', async function (event) {
+    const form = document.getElementById('addInsumoForm');
+if (form) {
+    form.addEventListener('submit', async function (event) {
         event.preventDefault();
-        
+       
         const nombre = document.getElementById('nombre').value.trim();
         const cantidad = parseFloat(document.getElementById('cantidad').value);
         const idProveedor = document.getElementById('proveedorSelect').value;
@@ -141,9 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error al enviar el formulario:', error);
         }
     });
-    
-});
+}
 
+});
 
 async function cargarInsumos() {
     try {
@@ -291,6 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+
 
 // Añade una nueva función para eliminar insumo
 async function eliminarInsumo() {

@@ -41,7 +41,6 @@
                                 <th>Fecha</th>
                                 <th>Nombre del Pan</th>
                                 <th>Ingredientes</th>
-                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="registrosDiariosTableBody">
@@ -58,33 +57,6 @@
         </div>
     </div>
 
-    <script>
-        // Simulación de datos de registros diarios
-        const registrosDiarios = [
-            { fecha: '2023-10-01', nombre: 'Pan de Ajo', ingredientes: 'Harina, Ajo, Agua' },
-            { fecha: '2023-10-02', nombre: 'Pan de Chocolate', ingredientes: 'Harina, Chocolate, Azúcar' }
-            // Agrega más registros según sea necesario
-        ];
-
-        function cargarRegistrosDiarios() {
-            const tableBody = document.getElementById('registrosDiariosTableBody');
-            tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
-
-            registrosDiarios.forEach(registro => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${registro.fecha}</td>
-                    <td>${registro.nombre}</td>
-                    <td>${registro.ingredientes}</td>
-                    <td>
-                        <button class="btn btn-info btn-sm">Ver Detalles</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        window.onload = cargarRegistrosDiarios;
-    </script>
+    <script src="../scritps/registros.js"></script>
 </body>
 </html>

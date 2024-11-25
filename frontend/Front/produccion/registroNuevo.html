@@ -51,8 +51,8 @@
                             <label for="panSelect" class="form-label"></label>
                             <select class="form-select" id="panSelect" required>
                                 <option value="">Seleccione un pan</option>
-                                <!-- Opciones de panes se llenarán aquí -->
                             </select>
+                            <input type="number" class="form-control me-2" placeholder="cantidad" required>  
                         </div>
                         <button type="submit" class="btn btn-primary">Registrar</button>
                     </form>
@@ -68,20 +68,7 @@
         </div>
     </div>
 
-    <script src="../main.js"></script>
-    <script>
-        window.onload = function() {
-            // Cargar los panes al cargar la página
-            cargarPanes();
+    <script src="../scritps/produccion.js"></script>
     
-            // Mostrar el precio si existe
-            const precio = localStorage.getItem('precioPan');
-            if (precio) {
-                const precioElement = document.createElement('p');
-                precioElement.textContent = `Precio del pan: $${precio}`;
-                document.body.appendChild(precioElement); // O donde desees mostrarlo
-            }
-        };
-    </script>
 </body>
 </html>

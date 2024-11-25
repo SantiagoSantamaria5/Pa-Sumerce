@@ -4,7 +4,9 @@ import proveedorRoutes from './routes/proveedor.js';
 import inventarioRoutes from './routes/inventario.js';
 import authRoutes from './routes/auth.js';
 import productoRoutes from './routes/producto.js';
-import db from './config/db.js';  // Importamos el pool de conexiones
+import produccionRoutes from './routes/producccion.js';
+import registroRoutes from './routes/registro.js'; // Importa la nueva ruta
+import db from './config/db.js'; // Importamos el pool de conexiones
 
 const app = express();
 
@@ -49,6 +51,8 @@ app.use('/api/proveedor', proveedorRoutes);
 app.use('/api/inventario', inventarioRoutes);
 app.use('/api/producto', productoRoutes);
 app.use('/api', authRoutes);
+app.use('/api/produccion', produccionRoutes);
+app.use('/api/registro', registroRoutes); // Nueva ruta agregada
 
 app.get('/', (req, res) => {
     console.log('Root endpoint hit!');

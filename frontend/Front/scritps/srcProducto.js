@@ -245,3 +245,5 @@ document.getElementById('saveButton').addEventListener('click', async (event) =>
     event.preventDefault(); // Evitar el comportamiento por defecto del formulario
     await guardarProducto(event); // Llamar la función para guardar el producto
 });
+
+
