@@ -149,7 +149,10 @@ if (form) {
 async function cargarInsumos() {
     try {
         // Solicitar los insumos al servidor
-        insumos = await sendRequest('/inventario', 'GET');
+        const response = await sendRequest('/inventario', 'GET');
+        
+        // Check if the response has a data property and it's an array
+        insumos = response.data && Array.isArray(response.data) ? response.data : [];
         
         // Obtener el select donde se cargarán los insumos
         const insumoSelect = document.getElementById('insumoSelect');
