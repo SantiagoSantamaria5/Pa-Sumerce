@@ -137,44 +137,52 @@ async function cargarInventario() {
     }
 }
 
-/**
- * Generar un PDF con los datos de la tabla de inventario.
- */
 function generarPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF();
+        
+        // Color gradiente personalizado
+        const gradientColors = {
+            start: '#fde0c1',
+            end: '#eb955c'
+        };
 
         // Ruta del logo
         const logoPath = "../images/kirby.png";
-        const logoWidth = 50; // Ancho del logo
-        const logoHeight = 20; // Alto del logo
+        const logoWidth = 50;
+        const logoHeight = 20;
 
-        // Crear una promesa para cargar el logo y generar el PDF
         const img = new Image();
         img.src = logoPath;
-
         img.onload = () => {
-            // Agregar el logo al PDF
-            pdf.addImage(img, 'JPEG', 10, 10, logoWidth, logoHeight);
+            // Configuración de estilos personalizados
+            pdf.setFillColor(gradientColors.start);
+            pdf.rect(0, 0, 210, 297, 'F'); // Fondo completo con gradiente de color
 
-            // Añadir título debajo del logo
-            pdf.setFontSize(16);
-            pdf.text('Informe de Inventario', 70, 20); // Ajusta las coordenadas para centrar
-
-            // Añadir un recuadro con la fecha de generación
-            const today = new Date().toLocaleDateString();
-            pdf.setDrawColor(0); // Negro
+            // Agregar logo con sombra
+            pdf.setDrawColor(100);
             pdf.setLineWidth(0.5);
-            pdf.rect(140, 10, 60, 10); // x, y, width, height
-            pdf.setFontSize(10);
-            pdf.text(`Fecha: ${today}`, 145, 17); // Coordenadas dentro del recuadro
+            pdf.addImage(img, 'JPEG', 10, 10, logoWidth, logoHeight);
+            
+            // Título con estilo
+            pdf.setTextColor(50);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(18);
+            pdf.text('Informe de Inventario', 70, 25);
 
-            // Crear un encabezado para la tabla
+            // Recuadro de fecha con diseño
+            pdf.setDrawColor(0);
+            pdf.setFillColor(gradientColors.end);
+            pdf.setTextColor(255);
+            pdf.rect(140, 10, 60, 10, 'FD');
+            pdf.setFontSize(10);
+            pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, 145, 17);
+
+            // Configuración de tabla
             const headers = ["Nombre", "Cantidad", "Fecha Adquisición", "Fecha Vencimiento", "Valor Unitario"];
             const tableData = [];
-
-            // Obtener datos de la tabla
+            
             const tableRows = document.querySelectorAll('#inventarioTableBody tr');
             tableRows.forEach(row => {
                 const cells = row.querySelectorAll('td');
@@ -182,20 +190,40 @@ function generarPDF() {
                 tableData.push(rowData);
             });
 
-            // Generar la tabla en el PDF
+            // Generar tabla con estilos
             pdf.autoTable({
                 head: [headers],
                 body: tableData,
-                startY: 40, // Ajusta para evitar superposición con el encabezado
+                startY: 40,
+                theme: 'striped', // Opciones: 'plain', 'striped', 'grid'
+                headStyles: {
+                    fillColor: gradientColors.end,
+                    textColor: 255,
+                    fontSize: 10,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: '#f3f3f3'
+                },
+                styles: {
+                    fontSize: 9,
+                    cellPadding: 3
+                },
+                columnStyles: {
+                    0: { fontStyle: 'bold' } // Nombre en negrita
+                }
             });
 
-            // Generar el URL del PDF
+            // Pie de página
+            pdf.setFontSize(8);
+            pdf.setTextColor(100);
+            pdf.text('Informe generado automáticamente', 10, 287);
+            pdf.text(`Página 1 de 1`, 180, 287);
+
+            // Generar y abrir PDF
             const pdfURL = pdf.output('bloburl');
-
-            // Abrir en una nueva pestaña
             const newTab = window.open(pdfURL, '_blank');
-
-            // Verificar si el navegador bloqueó la ventana emergente
+            
             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
                 showAlert('El navegador bloqueó la apertura de una nueva pestaña. Permite ventanas emergentes para esta página.', 'warning');
             } else {

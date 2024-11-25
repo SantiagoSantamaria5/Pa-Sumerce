@@ -209,4 +209,4 @@ const validateInventoryUpdate = async (req, res, next) => {
     next();
 };
 
-export { validateInventoryInput, validateInventoryUpdate };
+export { validateInventoryInput, validateInventoryUpdate }; 
