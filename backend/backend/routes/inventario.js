@@ -2,36 +2,18 @@ import express from 'express';
 import db from '../config/db.js';
 
 const router = express.Router();
-
-// Enhanced validation function
-const validateInventoryInput = async (req, res, next) => {
+router.post('/crear', async (req, res) => {
     const { nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
 
-    // Trim and validate name
-    if (!nombre || nombre.trim() === '') {
+    // Validar que todos los campos estén presentes
+    if (!nombre || cantidad == null || !idProveedor || !fechaAdquisicion || !fechaVencimiento || valorUnitario == null) {
         return res.status(400).json({
             success: false,
-            message: 'El nombre del insumo no puede estar vacío.',
+            message: 'Todos los campos son requeridos',
         });
     }
 
-    // Validate cantidad
-    if (cantidad == null || cantidad < 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'La cantidad debe ser un número no negativo.',
-        });
-    }
-
-    // Validate valor unitario
-    if (valorUnitario == null || valorUnitario < 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'El valor unitario debe ser un número no negativo.',
-        });
-    }
-
-    // Validate dates
+    // Validar si las fechas son válidas
     const fechaAdquisicionDate = new Date(fechaAdquisicion);
     const fechaVencimientoDate = new Date(fechaVencimiento);
 
@@ -42,24 +24,19 @@ const validateInventoryInput = async (req, res, next) => {
         });
     }
 
-    // Ensure acquisition date is not in the future
-    if (fechaAdquisicionDate > new Date()) {
-        return res.status(400).json({
-            success: false,
-            message: 'La fecha de adquisición no puede ser en el futuro.',
-        });
-    }
-
-    // Ensure expiration date is after acquisition date
-    if (fechaVencimientoDate <= fechaAdquisicionDate) {
-        return res.status(400).json({
-            success: false,
-            message: 'La fecha de vencimiento debe ser posterior a la fecha de adquisición.',
-        });
-    }
-
-    // Validate provider existence
     try {
+        // Validar si el nombre ya existe en la base de datos
+        const nombreQuery = 'SELECT * FROM inventario WHERE nombre = ?';
+        const [nombreResults] = await db.query(nombreQuery, [nombre]);
+
+        if (nombreResults.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'El nombre del insumo ya existe en el inventario.',
+            });
+        }
+
+        // Validar que el proveedor exista
         const proveedorQuery = 'SELECT * FROM proveedor WHERE id = ?';
         const [proveedorResults] = await db.query(proveedorQuery, [idProveedor]);
 
@@ -69,39 +46,7 @@ const validateInventoryInput = async (req, res, next) => {
                 message: 'El proveedor especificado no existe.',
             });
         }
-    } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: 'Error al validar el proveedor.',
-        });
-    }
 
-    // Validate unique name (case-insensitive)
-    try {
-        const nombreQuery = 'SELECT * FROM inventario WHERE LOWER(nombre) = LOWER(?)';
-        const [nombreResults] = await db.query(nombreQuery, [nombre]);
-
-        if (nombreResults.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'El nombre del insumo ya existe en el inventario.',
-            });
-        }
-    } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: 'Error al validar el nombre del insumo.',
-        });
-    }
-
-    next();
-};
-
-// Enhanced create endpoint with validation middleware
-router.post('/crear', validateInventoryInput, async (req, res) => {
-    const { nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
-
-    try {
         // Inserción del insumo
         const insertQuery = `
             INSERT INTO inventario (nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario)
@@ -123,60 +68,54 @@ router.post('/crear', validateInventoryInput, async (req, res) => {
     }
 });
 
-// Similar validation for update endpoint
-const validateInventoryUpdate = async (req, res, next) => {
-    const { id } = req.params;
-    const { nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
 
-    // Validate input (similar to create validation)
-    if (!nombre || nombre.trim() === '') {
-        return res.status(400).json({
-            success: false,
-            message: 'El nombre del insumo no puede estar vacío.',
-        });
-    }
-
-    // Additional check to ensure the item exists before updating
+router.get('/', async (req, res) => {
     try {
-        const existQuery = 'SELECT * FROM inventario WHERE Id = ?';
-        const [existResults] = await db.query(existQuery, [id]);
+        const query = 'SELECT * FROM inventario';
+        const [results] = await db.query(query);
 
-        if (existResults.length === 0) {
+        if (results.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Insumo no encontrado.',
+                message: 'No hay insumos en el inventario.',
             });
         }
+
+        res.json({
+            success: true,
+            data: results,
+        });
     } catch (err) {
+        console.error('Error al obtener insumos:', err);
         return res.status(500).json({
             success: false,
-            message: 'Error al validar la existencia del insumo.',
+            message: 'Error al obtener los insumos.',
         });
     }
+});
 
-    // Validate name uniqueness (excluding current item)
+
+// Leer un insumo por ID
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const query = 'SELECT * FROM inventario WHERE Id = ?';
     try {
-        const nombreQuery = 'SELECT * FROM inventario WHERE LOWER(nombre) = LOWER(?) AND Id != ?';
-        const [nombreResults] = await db.query(nombreQuery, [nombre, id]);
+        const [results] = await db.query(query, [id]);
 
-        if (nombreResults.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'El nombre del insumo ya existe en el inventario.',
-            });
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Insumo no encontrado.' });
         }
+
+        res.json(results[0]);
     } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: 'Error al validar el nombre del insumo.',
-        });
+        console.error('Error al obtener el insumo:', err);
+        return res.status(500).json({ message: 'Error al obtener el insumo.' });
     }
+});
 
-    next();
-};
-
-// Updated update endpoint with validation middleware
-router.put('/actualizar/:id', validateInventoryUpdate, async (req, res) => {
+// Actualizar un insumo
+router.put('/actualizar/:id', async (req, res) => {
     const { id } = req.params;
     const { nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario } = req.body;
 
@@ -189,6 +128,13 @@ router.put('/actualizar/:id', validateInventoryUpdate, async (req, res) => {
     try {
         const [results] = await db.query(query, [nombre, cantidad, idProveedor, fechaAdquisicion, fechaVencimiento, valorUnitario, id]);
 
+        if (results.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Insumo no encontrado.',
+            });
+        }
+
         res.json({
             success: true,
             message: 'Insumo actualizado exitosamente.',
@@ -199,6 +145,26 @@ router.put('/actualizar/:id', validateInventoryUpdate, async (req, res) => {
             success: false,
             message: 'Error al actualizar el insumo.',
         });
+    }
+});
+
+// Endpoint para eliminar un insumo
+router.delete('/eliminar/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const query = 'DELETE FROM inventario WHERE Id = ?';
+
+    try {
+        const [results] = await db.query(query, [id]);
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'Insumo no encontrado.' });
+        }
+
+        res.json({ message: 'Insumo eliminado correctamente.' });
+    } catch (err) {
+        console.error('Error al eliminar el insumo:', err);
+        return res.status(500).json({ message: 'Error al eliminar el insumo.' });
     }
 });
 
