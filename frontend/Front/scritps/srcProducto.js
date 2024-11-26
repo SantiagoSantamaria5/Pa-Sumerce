@@ -85,15 +85,15 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
 // Función para cargar los ingredientes desde el servidor
 async function cargarIngredientes() {
     try {
-        const response = await sendRequest('/inventario', 'GET');
+        const response = await sendRequest('/inventario/', 'GET');
         
-        // Asegurarse de que la respuesta sea un array de ingredientes
-        if (!Array.isArray(response) || response.length === 0) {
+        // Check if the response has a success property and data array
+        if (!response.success || !Array.isArray(response.data) || response.data.length === 0) {
             throw new Error('No se encontraron ingredientes');
         }
 
         // Guardamos los ingredientes en la variable global
-        ingredientes = response;
+        ingredientes = response.data;
 
         // Actualizamos los selects en la página
         const selectIngredientes = document.querySelectorAll('#SelectIngrediente');
@@ -102,7 +102,7 @@ async function cargarIngredientes() {
             select.innerHTML = '<option value="">Seleccione el ingrediente</option>';
             
             // Iteramos sobre los ingredientes y agregamos las opciones al select
-            response.forEach(ingrediente => {
+            ingredientes.forEach(ingrediente => {
                 const option = document.createElement('option');
                 option.value = ingrediente.Id;  // Usamos el Id del ingrediente
                 option.textContent = ingrediente.nombre;  // Nombre del ingrediente
@@ -223,7 +223,33 @@ async function guardarProducto(event) {
     }
 }
 
+document.getElementById('registroNuevoForm').addEventListener('submit', async (event) => {
+    event.preventDefault();  // Asegúrate de que la página no se recargue
 
+    const idProducto = document.getElementById('panSelect').value;
+    const cantidad = parseInt(document.querySelector('#registroNuevoForm input[type="number"]').value);
+
+    if (!idProducto || !cantidad || cantidad <= 0) {
+        showAlert('Seleccione un producto y cantidad válida', 'warning');
+        return;
+    }
+
+    try {
+        const response = await sendRequest('/produccion/guardar', 'POST', { idProducto, cantidad });
+
+        if (response.success) {
+            showAlert(`Registro registrada`, 'success');
+            document.getElementById('registroNuevoForm').reset();
+        } else {
+            // This is the key change - directly show the error message from the server
+            showAlert(response.message, 'danger');
+        }
+    } catch (error) {
+        console.error('Error al registrar producción:', error);
+        // Show the error message, prioritizing the specific message
+        showAlert(error.message || 'Error al registrar producción', 'danger');
+    }
+});
 
 
 // Event Listeners

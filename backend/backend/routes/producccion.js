@@ -40,6 +40,7 @@ router.get('/productos', async (req, res) => {
 
 
 router.post('/guardar', async (req, res) => {
+    console.log('Received production save request:', req.body); 
     const { idProducto, cantidad } = req.body;
     const fechaActual = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
 

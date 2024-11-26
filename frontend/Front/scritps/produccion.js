@@ -41,7 +41,6 @@ document.getElementById('panSelect').addEventListener('change', (event) => {
 
 // Función para realizar solicitudes al servidor
 async function sendRequest(endpoint, method = 'GET', body = null) {
-    
     const options = {
         method,
         headers: {
@@ -58,11 +57,6 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         const contentType = response.headers.get('content-type');
-        
-        // Verificar si la respuesta fue exitosa
-        if (!response.ok) {
-            throw new NetworkError('Error al procesar la solicitud', response.status);
-        }
 
         const responseText = await response.text();  // Leer la respuesta como texto primero
         console.log("Respuesta del servidor:", responseText);  // Agregar log
@@ -74,7 +68,14 @@ async function sendRequest(endpoint, method = 'GET', body = null) {
 
         // Verificar si el contenido es JSON
         if (contentType && contentType.includes('application/json')) {
-            return JSON.parse(responseText);  // Parsear el JSON si es válido
+            const parsedResponse = JSON.parse(responseText);
+            
+            // If response is not successful, return the response instead of throwing an error
+            if (!response.ok || parsedResponse.success === false) {
+                return parsedResponse;
+            }
+            
+            return parsedResponse;
         } else {
             throw new Error('La respuesta no es JSON');
         }
@@ -122,11 +123,13 @@ document.getElementById('registroNuevoForm').addEventListener('submit', async (e
             showAlert(`Registro registrada`, 'success');
             document.getElementById('registroNuevoForm').reset();
         } else {
-            throw new Error(response.message);
+            // This is the key change - directly show the error message from the server
+            showAlert(response.message, 'danger');
         }
     } catch (error) {
         console.error('Error al registrar producción:', error);
-        showAlert(error.message, 'danger');
+        // Show the error message, prioritizing the specific message
+        showAlert(error.message || 'Error al registrar producción:', 'danger');
     }
 });
 
